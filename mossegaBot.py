@@ -27,7 +27,23 @@ def unknown(update, context):
 def filter_hashtag_messages(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="per aqui he vist un hastag")
     #user text
-    print(update.message.text)
+    user_text = update.message.text
+
+    #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
+    hashtags = ['#propostamossegui','#proposta','#propostesmossegui','#propostamosseguis']
+
+    if any(hashtag for hashtag in hashtags if hashtag in user_text):
+        try:
+            file_guio = open('guio.txt',mode='a+')
+            file_guio.write(user_text)
+            file_guio.close()
+        except:
+            print("error con el fichero")
+            
+
+
+
+
 
 def echo_all_messages(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
