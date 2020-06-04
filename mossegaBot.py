@@ -47,14 +47,6 @@ def filter_hashtag_messages(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Anoto la proposta!")
         context.bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
-        #forward message to have a link to the original message
-        #context.bot.forward_message(chat_id=-291751171, from_chat_id=update.effective_chat.id, message_id=update.message.message_id)
-        
-
-
-def echo_all_messages(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
-
 TOKEN = open("token.txt").read().strip()
 
 updater = Updater(token=TOKEN, use_context=True)
@@ -66,10 +58,6 @@ dispatcher.add_handler(CommandHandler('hora', hora))
 
 unknown_handler = MessageHandler(Filters.command, unknown)
 dispatcher.add_handler(unknown_handler)
-
-#echo all messages
-#echo_handler = MessageHandler(Filters.text & (~Filters.command), echo_all_messages)
-#dispatcher.add_handler(echo_handler)
 
 dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
 
