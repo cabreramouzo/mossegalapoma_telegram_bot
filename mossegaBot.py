@@ -1,6 +1,8 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import datetime
 import logging
+from communication import get_updates_json, send_message, reply_message
+
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
@@ -62,3 +64,7 @@ dispatcher.add_handler(unknown_handler)
 dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
 
 updater.start_polling()
+
+
+def main():
+    
