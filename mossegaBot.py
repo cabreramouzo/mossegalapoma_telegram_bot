@@ -7,12 +7,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 # defineix una funció que saluda i que s'executarà quan el bot rebi el missatge /start
 def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hola! Soc un bot bàsic per a mossegalapoma!.")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hola! Sóc un bot bàsic per a mossegalapoma!.")
 
 def help(update, context):
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="Soc un bot amb comandes /start, /help i /hora.")
+        text="Sóc un bot amb comandes /start, /help i /hora.")
 
 
 def hora(update, context):
@@ -22,7 +22,7 @@ def hora(update, context):
         text=missatge)
 
 def unknown(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Perdona però no entenc aquesta comanda TT.")
+    context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Perdona però no entenc aquesta comanda 🤨")
 
 def filter_hashtag_messages(update, context):
     #user text
