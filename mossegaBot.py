@@ -25,24 +25,31 @@ def unknown(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Perdona però no entenc aquesta comanda TT.")
 
 def filter_hashtag_messages(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="per aqui he vist un hastag")
     #user text
     user_text = update.message.text
+    telegram_user = update.message.from_user
+    user_name = ""
+    user_first_name = "sense_nom"
+    user_last_name = ""
+
+    if telegram_user.username:
+        user_name = telegram_user.username
+    if telegram_user.first_name:
+        user_first_name = telegram_user.first_name
+    if telegram_user.last_name:
+        user_last_name = telegram_user.last_name
+    
 
     #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
-    hashtags = ['#propostamossegui','#proposta','#propostesmossegui','#propostamosseguis']
+    hashtags = ['#propostamossegui','#proposta','#propostesmossegui','#propostamosseguis', 'proposta', 'propostes']
 
     if any(hashtag for hashtag in hashtags if hashtag in user_text):
-        try:
-            file_guio = open('guio.txt',mode='a+')
-            file_guio.write(user_text)
-            file_guio.close()
-        except:
-            print("error con el fichero")
-            
+        context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Anoto la proposta!")
+        context.bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
-
-
+        #forward message to have a link to the original message
+        #context.bot.forward_message(chat_id=-291751171, from_chat_id=update.effective_chat.id, message_id=update.message.message_id)
+        
 
 
 def echo_all_messages(update, context):
