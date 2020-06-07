@@ -44,7 +44,7 @@ def filter_hashtag_messages(update, bot):
     
 
     #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
-    hashtags = ['#propostamossegui','#proposta','#propostesmossegui','#propostamosseguis', 'proposta', 'propostes']
+    hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis', 'proposta', 'propostes']
 
     if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
         bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Anoto la proposta!")
