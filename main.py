@@ -8,6 +8,14 @@ bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
 
+def callback_thuesday(context: telegram.ext.CallbackContext):
+
+    thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
+    context.bot.send_message(chat_id=-291751171, 
+                            text="*bold*Propostes d'aquesta setmana:", 
+                            parse_mode=telegram.ParseMode.MARKDOWN_V2)
+    job_thuesday = job_queue.run_daily(callback_thuesday, time=thuesday_at_14, days= (1,), context= context)
+
 # defineix una funció que saluda i que s'executarà quan el bot rebi el missatge /start
 def start(update, bot):
     bot.send_message(chat_id=update.effective_chat.id, text="Hola! Sóc un bot bàsic per a mossegalapoma!.")
@@ -55,11 +63,15 @@ def webhook(request):
     bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
     if request.method == 'POST':
         update = telegram.Update.de_json(request.get_json(force=True), bot)
+
         filter_hashtag_messages(update, bot)
     return 'ok'
 
+updater = Updater(token=os.environ["TELEGRAM_TOKEN"], use_context=True)
+job_queue = updater.job_queue
+
 '''
-updater = Updater(token=TOKEN, use_context=True)
+
 
 
 
