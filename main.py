@@ -35,26 +35,32 @@ def unknown(update, bot):
 
 def filter_hashtag_messages(update, bot):
     #user text
-    user_text = update.message.text
-    telegram_user = update.message.from_user
-    user_name = ""
-    user_first_name = "sense_nom"
-    user_last_name = ""
+    if update is not None and update.message.text is not None:
+        user_text = update.message.text
+        telegram_user = update.message.from_user
+        user_name = ""
+        user_first_name = "sense_nom"
+        user_last_name = ""
 
-    if telegram_user.username:
-        user_name = telegram_user.username
-    if telegram_user.first_name:
-        user_first_name = telegram_user.first_name
-    if telegram_user.last_name:
-        user_last_name = telegram_user.last_name
-    
+        if telegram_user.username:
+            user_name = telegram_user.username
+        if telegram_user.first_name:
+            user_first_name = telegram_user.first_name
+        if telegram_user.last_name:
+            user_last_name = telegram_user.last_name
+        
 
-    #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
-    hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis', 'proposta', 'propostes']
+        #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
+        hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis', 'proposta', 'propostes']
+        federrates = ['#federrates','#federrades','#federates', 'fe d'errates' ]
 
-    if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
-        bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Anoto la proposta!")
-        bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+        if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Anoto la proposta!")
+            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+
+        if any(hashtag for hashtag in hashtags if federrates in user_text.lower()):
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Una altra!? Anoto la federates!")
+            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
 def webhook(request):
@@ -72,10 +78,6 @@ thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
 job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
 
 '''
-
-
-
-
 dispatcher = updater.dispatcher
 
 dispatcher.add_handler(CommandHandler('start', start))
