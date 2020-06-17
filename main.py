@@ -35,9 +35,9 @@ def unknown(update, bot):
 
 def filter_hashtag_messages(update, bot):
     #user text
-    if update is not None and update.message.text is not None:
-        user_text = update.message.text
-        telegram_user = update.message.from_user
+    if update is not None and update.effective_message.text is not None:
+        user_text = update.effective_message.text
+        telegram_user = update.effective_message.from_user
         user_name = ""
         user_first_name = "sense_nom"
         user_last_name = ""
@@ -52,14 +52,14 @@ def filter_hashtag_messages(update, bot):
 
         #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
         hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis', 'proposta', 'propostes']
-        federrates = ['#federrates','#federrades','#federates', 'fe d'errates' ]
+        federrates = ['#federrates','#federrades','#federates', "fe d'errates" ]
 
         if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Anoto la proposta!")
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text="Anoto la proposta!")
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
-        if any(hashtag for hashtag in hashtags if federrates in user_text.lower()):
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Una altra!? Anoto la federates!")
+        if any(hashtag for hashtag in federrates if hashtag in user_text.lower()):
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text="Una altra!? Anoto la federates!")
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
