@@ -52,7 +52,7 @@ def filter_hashtag_messages(update, bot):
         
 
         #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
-        hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis', 'proposta', 'propostes']
+        hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis']
         federrates = ['#federrates','#federrades','#federates', "fe d'errates" ]
 
         text_reply_proposal = ["Anoto la proposta!","Proposta anotada ;)", "Els hi anoto la proposta ^^", "L'apunto!", "Els hi deixo al guió :)"]
