@@ -11,7 +11,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 def message_for_thuesday(context: telegram.ext.CallbackContext):
     context.bot.send_message(chat_id=-291751171, 
-                            text="*bold*Propostes d'aquesta setmana:", 
+                            text="*Propostes d'aquesta setmana*:", 
                             parse_mode=telegram.ParseMode.MARKDOWN_V2)
                             
 
@@ -86,6 +86,7 @@ job_queue = updater.job_queue
 
 thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
 job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
+job_queue.start()
 
 '''
 dispatcher = updater.dispatcher
