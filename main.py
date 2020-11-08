@@ -73,11 +73,17 @@ def filter_hashtag_messages(update, bot):
         robot = u'\U0001F916'
         right_arrow = u'\U000027A1'
         writing_hand = u'\U0000270D'
+        robot_arm = u'\U0001F9BE'
+        thinking_face = u'\U0001F914'
+        clap_hands = u'\U0001F44F'
+        sun_glasses = u'\U0001F60E'
+        face_tongue = u'\U0001F61C'
 
         text_reply_proposal = [
             f"Anoto la proposta! {biceps}",f"Proposta anotada {winking_face}", f"Els hi anoto la proposta {grinning_face_smiling_eyes}", 
             f"L'apunto! {closed_mailbox}", f"Els la deixo al guió {postbox}", f"Apuntada! {paperclip}", f"Proposta que no s'escapa! {robot}{right_arrow}{writing_hand}",
-            f"Viatjant cap al guió... {rocket}"
+            f"Viatjant cap al guió... {rocket}", f"Clar que sí! {robot} {robot_arm}", f"Vols dir que no la vas dir fa un temps? {thinking_face}", 
+            f"Aquesta sí que és bona! {clap_hands}{clap_hands}{clap_hands}", f"Vamos allá, ¿No? {sun_glasses}", f"Fot-li! {face_tongue}"
         ]
 
         text_reply_errata = [
