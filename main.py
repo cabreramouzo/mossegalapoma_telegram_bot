@@ -52,11 +52,38 @@ def filter_hashtag_messages(update, bot):
         
 
         #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
-        hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis']
-        federrates = ['#federrates','#federrades','#federates', "fe d'errates" ]
+        hashtags = [
+            '#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis',
+            '#propostamosseguis', '#propostamosegui', '#propostamoseguis', '#propostesmosegui',
+            '#propostesmoseguis'
+        ]
+        federrates = [
+            '#federrates','#federrades',
+            '#federates', "fe d'errates"
+        ]
 
-        text_reply_proposal = ["Anoto la proposta!","Proposta anotada ;)", "Els hi anoto la proposta ^^", "L'apunto!", "Els la deixo al guió :)", "Apuntada! ;)", "Proposta que no s'escapa! :-)", "Viatjant cap al guió..."]
-        text_reply_errata = ["Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬", "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"]
+        # Emoji unicode codes
+        rocket = u'\U0001f680'
+        closed_mailbox = u'\U0001F4EB'
+        postbox = u'\U0001F4EE'
+        paperclip = u'\U0001F4CE'
+        biceps = u'\U0001F4AA'
+        grinning_face_smiling_eyes = u'\U0001F601'
+        winking_face = u'\U0001F609'
+        robot = u'\U0001F916'
+        right_arrow = u'\U000027A1'
+        writing_hand = u'\U0000270D'
+
+        text_reply_proposal = [
+            f"Anoto la proposta! {biceps}",f"Proposta anotada {winking_face}", f"Els hi anoto la proposta {grinning_face_smiling_eyes}", 
+            f"L'apunto! {closed_mailbox}", f"Els la deixo al guió {postbox}", f"Apuntada! {paperclip}", f"Proposta que no s'escapa! {robot}{right_arrow}{writing_hand}",
+            f"Viatjant cap al guió... {rocket}"
+        ]
+
+        text_reply_errata = [
+            "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
+            "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
+        ]
         
         random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
         random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
