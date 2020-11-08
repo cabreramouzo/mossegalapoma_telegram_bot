@@ -55,7 +55,7 @@ def filter_hashtag_messages(update, bot):
         hashtags = ['#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis','#propostamosseguis']
         federrates = ['#federrates','#federrades','#federates', "fe d'errates" ]
 
-        text_reply_proposal = ["Anoto la proposta!","Proposta anotada ;)", "Els hi anoto la proposta ^^", "L'apunto!", "Els hi deixo al guió :)"]
+        text_reply_proposal = ["Anoto la proposta!","Proposta anotada ;)", "Els hi anoto la proposta ^^", "L'apunto!", "Els la deixo al guió :)", "Apuntada! ;)", "Proposta que no s'escapa! :-)", "Viatjant cap al guió..."]
         text_reply_errata = ["Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬", "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"]
         
         random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
