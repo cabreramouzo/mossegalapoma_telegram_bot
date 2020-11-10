@@ -78,6 +78,15 @@ def filter_hashtag_messages(update, bot):
         clap_hands = u'\U0001F44F'
         sun_glasses = u'\U0001F60E'
         face_tongue = u'\U0001F61C'
+        unamused_face = u'\U0001F612'
+        tongue_out = u'\U0001F61D'
+        expression_less = u'\U0001F611'
+        siren = u'\U0001F6A8'
+
+        text_troll_reply = [
+            f"Això no té pinta de proposta... {unamused_face}", f"Ets un troll!!! {tongue_out}",
+            f"Ho tens clar! {expression_less}", "Alerta...TROLL!!! {siren}{siren}{siren}"
+        ]
 
         text_reply_proposal = [
             f"Anoto la proposta! {biceps}",f"Proposta anotada {winking_face}", f"Els hi anoto la proposta {grinning_face_smiling_eyes}", 
@@ -91,15 +100,22 @@ def filter_hashtag_messages(update, bot):
             "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
         ]
         
+        random_troll_text_index = random.randint(0, len(text_troll_reply) -1 )
         random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
         random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
 
+        text_troll = text_troll_reply[random_troll_text_index]
         text_proposal = text_reply_proposal[random_proposal_text_index]
         text_errata = text_reply_errata[random_errata_text_index]
 
         if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
-            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+
+            if len(user_text) < 35:
+                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
+            else:
+
+                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
+                bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
         if any(hashtag for hashtag in federrates if hashtag in user_text.lower()):
             bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
