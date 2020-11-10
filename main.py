@@ -85,7 +85,7 @@ def filter_hashtag_messages(update, bot):
 
         text_troll_reply = [
             f"Això no té pinta de proposta... {unamused_face}", f"Ets un troll!!! {tongue_out}",
-            f"Ho tens clar! {expression_less}", "Alerta...TROLL!!! {siren}{siren}{siren}"
+            f"Ho tens clar! {expression_less}", f"Alerta...TROLL!!! {siren}{siren}{siren}"
         ]
 
         text_reply_proposal = [
