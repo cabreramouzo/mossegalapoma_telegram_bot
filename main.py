@@ -5,6 +5,8 @@ import logging
 import os
 import random
 
+G_CLOUD = True
+
 bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
