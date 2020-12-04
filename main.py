@@ -6,6 +6,8 @@ import os
 import random
 
 G_CLOUD = True
+''' If the bot is hosted in Google Cloud Function set this constant to True. If false
+the bot will run using a busy waiting technique'''
 
 bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
 
@@ -123,6 +125,7 @@ def filter_hashtag_messages(update, bot):
             bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
+
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
 def webhook(request):
     bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
@@ -139,17 +142,16 @@ thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
 job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
 job_queue.start()
 
-'''
-dispatcher = updater.dispatcher
+if not G_CLOUD:
+    dispatcher = updater.dispatcher
 
-dispatcher.add_handler(CommandHandler('start', start))
-dispatcher.add_handler(CommandHandler('help', help))
-dispatcher.add_handler(CommandHandler('hora', hora))
+    #dispatcher.add_handler(CommandHandler('start', start))
+    #dispatcher.add_handler(CommandHandler('help', help))
+    #dispatcher.add_handler(CommandHandler('hora', hora))
 
-unknown_handler = MessageHandler(Filters.command, unknown)
-dispatcher.add_handler(unknown_handler)
+    unknown_handler = MessageHandler(Filters.command, unknown)
+    dispatcher.add_handler(unknown_handler)
 
-dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
+    dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
 
-updater.start_polling()
-''' 
+    updater.start_polling()
