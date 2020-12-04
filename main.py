@@ -99,6 +99,10 @@ def filter_hashtag_messages(update, bot):
             f"Aquesta sí que és bona! {clap_hands}{clap_hands}{clap_hands}", f"Vamos allá, ¿No? {sun_glasses}", f"Fot-li! {face_tongue}"
         ]
 
+        if user_name != "":
+            text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
+            text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
+
         text_reply_errata = [
             "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
             "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
