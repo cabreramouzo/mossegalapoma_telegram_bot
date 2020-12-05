@@ -86,6 +86,7 @@ def filter_hashtag_messages(update, bot):
         tongue_out = u'\U0001F61D'
         expression_less = u'\U0001F611'
         siren = u'\U0001F6A8'
+        weary_face = u'\U0001F629'
 
         text_troll_reply = [
             f"Això no té pinta de proposta... {unamused_face}", f"Ets un troll!!! {tongue_out}",
@@ -104,6 +105,11 @@ def filter_hashtag_messages(update, bot):
             f"A Netflix oi? La vaig veure ahir vespre! {winking_face}",
             f"Ah, pensava que era d'HBO aquesta...{thinking_face}",
             f"Netflix té merda per un tub, però també de bones i aquesta n'és una {face_tongue}",
+            f"Llàstima que em vaig passar a Disney+ fa temps {sun_glasses}",
+            f"Vaja! Ara que he cancel·lat la subscripció la dius... {expression_less}",
+            f"Enganxa eh!? {face_tongue}",
+            f"Va, que no tot és Netflix en aquesta vida! {grinning_face_smiling_eyes}",
+            f"Podeu deixar de recomanar pelis i sèries a Netflix?! No hi ha qui pugui compilar! {weary_face}",
         ]
 
         if user_name != "":
@@ -117,7 +123,6 @@ def filter_hashtag_messages(update, bot):
         if any( keyword for keyword in message_keywords if keyword in user_text.lower() ):
             is_rich_response = True
             
-
         text_reply_errata = [
             "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
             "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
@@ -142,7 +147,6 @@ def filter_hashtag_messages(update, bot):
             if len(user_text) < 35:
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
             else:
-
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
                 bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
