@@ -99,9 +99,24 @@ def filter_hashtag_messages(update, bot):
             f"Aquesta sí que és bona! {clap_hands}{clap_hands}{clap_hands}", f"Vamos allá, ¿No? {sun_glasses}", f"Fot-li! {face_tongue}"
         ]
 
+        text_rich_reply_proposal = [
+            f"Tota la raó, és del milloret que he vist últimament a Netflix.",
+            f"A Netflix oi? La vaig veure ahir vespre! {winking_face}",
+            f"Ah, pensava que era d'HBO aquesta...{thinking_face}",
+            f"Netflix té merda per un tub, però també de bones i aquesta n'és una {face_tongue}",
+        ]
+
         if user_name != "":
             text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
             text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
+
+        #Add rich response if there is 'serie' or 'sèrie' or 'Netflix' in the message
+        #message_keywords = ['netflix', 'sèrie', 'serie', 'peli']
+        is_rich_response = False
+        message_keywords = ['netflix', 'nètflix']
+        if any( keyword for keyword in message_keywords if keyword in user_text.lower() ):
+            is_rich_response = True
+            
 
         text_reply_errata = [
             "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
@@ -109,11 +124,17 @@ def filter_hashtag_messages(update, bot):
         ]
         
         random_troll_text_index = random.randint(0, len(text_troll_reply) -1 )
+        random_rich_proposal_text_index = random.randint(0, len(text_rich_reply_proposal) -1 )
         random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
         random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
 
         text_troll = text_troll_reply[random_troll_text_index]
-        text_proposal = text_reply_proposal[random_proposal_text_index]
+
+        if is_rich_response:
+            text_proposal = text_rich_reply_proposal[random_rich_proposal_text_index]
+        else:
+            text_proposal = text_reply_proposal[random_proposal_text_index]
+        
         text_errata = text_reply_errata[random_errata_text_index]
 
         if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
