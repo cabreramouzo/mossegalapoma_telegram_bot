@@ -4,7 +4,7 @@ import datetime
 import logging
 import os
 import random
-
+INTERNAL_VERSION = '1.0.3'
 G_CLOUD = True
 ''' If the bot is hosted in Google Cloud Function set this constant to True. If false
 the bot will run using a busy waiting technique'''
@@ -66,7 +66,7 @@ def filter_hashtag_messages(update, bot):
             '#federates', "fe d'errates"
         ]
         palasaca = [
-            '#palasaca','#amazon'
+            '#palasaca','#amazon', '#palasaka'
         ]
 
         # Emoji unicode codes
