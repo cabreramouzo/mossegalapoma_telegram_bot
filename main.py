@@ -65,6 +65,9 @@ def filter_hashtag_messages(update, bot):
             '#federrates','#federrades',
             '#federates', "fe d'errates"
         ]
+        palasaca = [
+            '#palasaca','#amazon'
+        ]
 
         # Emoji unicode codes
         rocket = u'\U0001f680'
@@ -87,6 +90,11 @@ def filter_hashtag_messages(update, bot):
         expression_less = u'\U0001F611'
         siren = u'\U0001F6A8'
         weary_face = u'\U0001F629'
+        face_blowing_a_kiss = u'\U0001F618'
+        gust_of_wind = u'\U0001F4A8'
+        fire = u'\U0001F525'
+        water_faucet = u'\U0001F6B0'
+        money_bag = u'\U0001F4B0'
 
         text_troll_reply = [
             f"Això no té pinta de proposta... {unamused_face}", f"Ets un troll!!! {tongue_out}",
@@ -98,6 +106,12 @@ def filter_hashtag_messages(update, bot):
             f"L'apunto! {closed_mailbox}", f"Els la deixo al guió {postbox}", f"Apuntada! {paperclip}", f"Proposta que no s'escapa! {robot}{right_arrow}{writing_hand}",
             f"Viatjant cap al guió... {rocket}", f"Clar que sí! {robot} {robot_arm}", f"Vols dir que no la vas dir fa un temps? {thinking_face}", 
             f"Aquesta sí que és bona! {clap_hands}{clap_hands}{clap_hands}", f"Vamos allá, ¿No? {sun_glasses}", f"Fot-li! {face_tongue}"
+        ]
+
+        text_reply_palasaca = [
+            f"En @tomasmanz i tot l'equip de Mossegalapoma t'estem molt agraïts! {face_blowing_a_kiss}",f"Disfruta-ho i moltes gràcies! {grinning_face_smiling_eyes} ",
+            f"Gràcies! Cada dia estem més aprop del Tesla Model S... {face_tongue}", f"La targeta fot fum!!! {fire}{gust_of_wind}",
+            f"De mica en mica s'omple la pica! {water_faucet}{money_bag}"
         ]
 
         text_rich_reply_proposal = [
@@ -116,6 +130,12 @@ def filter_hashtag_messages(update, bot):
             text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
             text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
 
+            text_reply_palasaca.append(f"@{user_name}, seguim endavant gràcies a tu {face_blowing_a_kiss}")
+            text_reply_palasaca.append(f"@{user_name}, sense tu això no seria possible {face_blowing_a_kiss}")
+            text_reply_palasaca.append(f"@{user_name}, necessitem mosseguis com tu per tirar això endavant. Merci! {grinning_face_smiling_eyes}")
+            text_reply_palasaca.append(f"Quan tinguem el Tesla, @{user_name} seràs dels primers a provar-lo! {sun_glasses} Paraula de Bot {robot}")
+            text_reply_palasaca.append(f"@{user_name}, saps que en @tomasmanz t'estima molt, oi? Jo en canvi... és complicat. {robot}")
+
         #Add rich response if there is 'serie' or 'sèrie' or 'Netflix' in the message
         #message_keywords = ['netflix', 'sèrie', 'serie', 'peli']
         is_rich_response = False
@@ -132,6 +152,7 @@ def filter_hashtag_messages(update, bot):
         random_rich_proposal_text_index = random.randint(0, len(text_rich_reply_proposal) -1 )
         random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
         random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
+        random_palasaca_text_index = random.randint(0, len(text_reply_palasaca) -1 )
 
         text_troll = text_troll_reply[random_troll_text_index]
 
@@ -141,6 +162,8 @@ def filter_hashtag_messages(update, bot):
             text_proposal = text_reply_proposal[random_proposal_text_index]
         
         text_errata = text_reply_errata[random_errata_text_index]
+
+        text_palasaca = text_reply_palasaca[random_palasaca_text_index]
 
         if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
 
@@ -154,6 +177,8 @@ def filter_hashtag_messages(update, bot):
             bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
+        if any(hashtag for hashtag in palasaca if hashtag in user_text.lower()):
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
 def webhook(request):
