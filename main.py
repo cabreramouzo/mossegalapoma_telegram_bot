@@ -4,12 +4,16 @@ import datetime
 import logging
 import os
 import random
-INTERNAL_VERSION = '1.0.3'
+import requests
+import json
+
+INTERNAL_VERSION = '1.0.4'
 G_CLOUD = True
 ''' If the bot is hosted in Google Cloud Function set this constant to True. If false
 the bot will run using a busy waiting technique'''
 
 bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
+tenor_api_key = os.environ["TENOR_API_KEY"]
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
 
@@ -38,6 +42,27 @@ def hora(update, bot):
 def unknown(update, bot):
     bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Perdona però no entenc aquesta comanda 🤨")
 
+def get_thanks_gif_url():
+    # set the apikey and limit
+    apikey = tenor_api_key
+    lmt = 4
+
+    # our test search
+    search_term_list = ["cute cat", "kitty love", "love animal", "thank you", "cute animal", "love you" ]
+    random_index_search_term = random.randint(0, len(search_term_list) -1)
+    search_term = search_term_list[random_index_search_term]
+
+    # get random results using default locale of EN_US
+    r = requests.get("https://api.tenor.com/v1/random?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
+    url='https://tenor.com/view/funny-animals-cat-love-cat-hug-gif-14233808'
+    if r.status_code == 200:
+        gifs = json.loads(r.content)
+        #print (gifs)
+        random_index = random.randint(0, len(gifs) -1)
+        url = gifs['results'][random_index]['url']
+
+    return url
+
 def filter_hashtag_messages(update, bot):
     #user text
     if update is not None and update.effective_message.text is not None:
@@ -54,7 +79,6 @@ def filter_hashtag_messages(update, bot):
         if telegram_user.last_name:
             user_last_name = telegram_user.last_name
         
-
         #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
         hashtags = [
             '#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis',
@@ -178,7 +202,12 @@ def filter_hashtag_messages(update, bot):
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
         if any(hashtag for hashtag in palasaca if hashtag in user_text.lower()):
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
+            random_number = random.randint(0,10)
+            if random_number%2 == 0:
+                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
+            else:
+                url = get_thanks_gif_url()
+                bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
 def webhook(request):
