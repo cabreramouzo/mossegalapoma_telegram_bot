@@ -90,7 +90,7 @@ def filter_hashtag_messages(update, bot):
             '#federates', "fe d'errates"
         ]
         palasaca = [
-            '#palasaca','#amazon', '#palasaka'
+            '#palasaca','#amazon', '#palasaka', '#afiliats'
         ]
 
         # Emoji unicode codes
