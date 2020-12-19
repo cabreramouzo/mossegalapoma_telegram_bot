@@ -53,7 +53,7 @@ def get_thanks_gif_url():
     search_term = search_term_list[random_index_search_term]
 
     # get random results using default locale of EN_US
-    r = requests.get("https://api.tenor.com/v1/random?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
+    r = requests.get("https://api.tenor.com/v1/search?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
     url='https://tenor.com/view/funny-animals-cat-love-cat-hug-gif-14233808'
     if r.status_code == 200:
         gifs = json.loads(r.content)
@@ -69,12 +69,12 @@ def get_mandalorian_gif_url():
     lmt = 4
 
     # our test search
-    search_term_list = ["baby yoda", "baby yoda happy", "mandalorian", "thisistheway", "thisistheway dance"]
+    search_term_list = ["baby yoda", "baby yoda happy", "mandalorian", "thisistheway"]
     random_index_search_term = random.randint(0, len(search_term_list) -1)
     search_term = search_term_list[random_index_search_term]
 
     # get random results using default locale of EN_US
-    r = requests.get("https://api.tenor.com/v1/random?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
+    r = requests.get("https://api.tenor.com/v1/search?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
     url='https://tenor.com/view/baby-yoda-baby-yoda-happy-laughing-smile-happy-gif-16061896'
     if r.status_code == 200:
         gifs = json.loads(r.content)
