@@ -7,7 +7,7 @@ import random
 import requests
 import json
 
-INTERNAL_VERSION = '1.0.5'
+INTERNAL_VERSION = '1.0.6'
 G_CLOUD = True
 ''' If the bot is hosted in Google Cloud Function set this constant to True. If false
 the bot will run using a busy waiting technique'''
@@ -85,6 +85,12 @@ def get_mandalorian_gif_url():
     return url
 
 def filter_hashtag_messages(update, bot):
+
+    def update_entities_offset_by(offset: int):
+        print(f"el offset es {offset}")
+        for entity in message_entities:
+            entity.offset += offset
+
     #user text
     if update is not None and update.effective_message.text is not None:
         user_text = update.effective_message.text
@@ -93,12 +99,17 @@ def filter_hashtag_messages(update, bot):
         user_first_name = "sense_nom"
         user_last_name = ""
 
+        message_entities = update.effective_message.entities
+
         if telegram_user.username:
             user_name = telegram_user.username
         if telegram_user.first_name:
             user_first_name = telegram_user.first_name
         if telegram_user.last_name:
             user_last_name = telegram_user.last_name
+
+        prompt = user_name + "("+ user_first_name + " " + user_last_name + "): "
+        update_entities_offset_by( len( prompt) )
         
         #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
         hashtags = [
@@ -218,11 +229,11 @@ def filter_hashtag_messages(update, bot):
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
             else:
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
-                bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+                bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text, entities=message_entities)
 
         if any(hashtag for hashtag in federrates if hashtag in user_text.lower()):
             bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
-            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text, entities=message_entities)
 
         #afiliats
         if any(hashtag for hashtag in palasaca if hashtag in user_text.lower()):
