@@ -114,7 +114,7 @@ def filter_hashtag_messages(update, bot):
             '#palasaca','#amazon', '#palasaka', '#afiliats', 'compra per afiliats', 'compra feta per afiliats'
         ]
 
-        this_is_the_way = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami']
+        this_is_the_way = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami', '#mandalorian', '#themandalorian']
 
         # Emoji unicode codes
         rocket = u'\U0001f680'
