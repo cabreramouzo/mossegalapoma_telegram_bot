@@ -8,39 +8,40 @@ import requests
 import json
 
 INTERNAL_VERSION = '1.0.5'
-G_CLOUD = True
+G_CLOUD = False
 ''' If the bot is hosted in Google Cloud Function set this constant to True. If false
 the bot will run using a busy waiting technique'''
 
-bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
-tenor_api_key = os.environ["TENOR_API_KEY"]
+#bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
+bot = telegram.Bot(token="...")
+#tenor_api_key = os.environ["TENOR_API_KEY"]
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
+#logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
 
 def message_for_thuesday(context: telegram.ext.CallbackContext):
-    context.bot.send_message(chat_id=-291751171, 
+    context.context.bot.send_message(chat_id=-443903083, 
                             text="*Propostes d'aquesta setmana*:", 
                             parse_mode=telegram.ParseMode.MARKDOWN_V2)
                             
 
 # defineix una funció que saluda i que s'executarà quan el bot rebi el missatge /start
 def start(update, bot):
-    bot.send_message(chat_id=update.effective_chat.id, text="Hola! Sóc un bot bàsic per a mossegalapoma!.")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hola! Sóc un bot bàsic per a mossegalapoma!.")
 
 def help(update, bot):
-    bot.send_message(
+    context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="Sóc un bot amb comandes /start, /help i /hora.")
 
 
 def hora(update, bot):
     missatge = str(datetime.datetime.now())
-    bot.send_message(
+    context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=missatge)
 
 def unknown(update, bot):
-    bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Perdona però no entenc aquesta comanda 🤨")
+    context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Perdona però no entenc aquesta comanda 🤨")
 
 def get_thanks_gif_url():
     # set the apikey and limit
@@ -84,10 +85,20 @@ def get_mandalorian_gif_url():
 
     return url
 
-def filter_hashtag_messages(update, bot):
+def filter_hashtag_messages(update, context):
+
+    def update_entities_offset_by(offset: int):
+        print(f"el offset es {offset}")
+        for entity in message_entities:
+            entity.offset += offset
+
+    print("paso por filter_hashtag_messages")
     #user text
     if update is not None and update.effective_message.text is not None:
+        print("paso por update")
         user_text = update.effective_message.text
+        print(type(user_text))
+        message_entities = update.effective_message.entities
         telegram_user = update.effective_message.from_user
         user_name = ""
         user_first_name = "sense_nom"
@@ -99,6 +110,9 @@ def filter_hashtag_messages(update, bot):
             user_first_name = telegram_user.first_name
         if telegram_user.last_name:
             user_last_name = telegram_user.last_name
+
+        prompt = user_name + "("+ user_first_name + " " + user_last_name + "): "
+        update_entities_offset_by(len( prompt) )
         
         #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
         hashtags = [
@@ -215,46 +229,48 @@ def filter_hashtag_messages(update, bot):
         if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
 
             if len(user_text) < 20:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
+                context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
             else:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
-                bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+                context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
+                context.bot.send_message(chat_id=-443903083, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text, entities=message_entities)
 
         if any(hashtag for hashtag in federrates if hashtag in user_text.lower()):
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
-            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+            context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
+            context.bot.send_message(chat_id=-443903083, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
         #afiliats
         if any(hashtag for hashtag in palasaca if hashtag in user_text.lower()):
             random_number = random.randint(0,10)
             if random_number%2 == 0:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
+                context.bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
             else:
                 url = get_thanks_gif_url()
-                bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
+                context.bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
         #mandalorian
         if any(hashtag for hashtag in this_is_the_way if hashtag in user_text.lower()):
             url = get_mandalorian_gif_url()
-            bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
+            context.bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
-def webhook(request):
-    bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
-    if request.method == 'POST':
-        update = telegram.Update.de_json(request.get_json(force=True), bot)
+# def webhook(request):
+#     bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
+#     if request.method == 'POST':
+#         update = telegram.Update.de_json(request.get_json(force=True), bot)
 
-        filter_hashtag_messages(update, bot)
-    return 'ok'
+#         filter_hashtag_messages(update, bot)
+#     return 'ok'
 
-updater = Updater(token=os.environ["TELEGRAM_TOKEN"], use_context=True)
-job_queue = updater.job_queue
 
-thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
-job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
-job_queue.start()
+# job_queue = updater.job_queue
 
-if not G_CLOUD:
+# thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
+# job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
+# job_queue.start()
+
+def main():
+
+    updater = Updater(token="...", use_context=True)
     dispatcher = updater.dispatcher
 
     #dispatcher.add_handler(CommandHandler('start', start))
@@ -267,3 +283,7 @@ if not G_CLOUD:
     dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
 
     updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
