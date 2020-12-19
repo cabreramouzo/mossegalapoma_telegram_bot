@@ -7,7 +7,7 @@ import random
 import requests
 import json
 
-INTERNAL_VERSION = '1.0.4'
+INTERNAL_VERSION = '1.0.5'
 G_CLOUD = True
 ''' If the bot is hosted in Google Cloud Function set this constant to True. If false
 the bot will run using a busy waiting technique'''
@@ -63,6 +63,27 @@ def get_thanks_gif_url():
 
     return url
 
+def get_mandalorian_gif_url():
+    # set the apikey and limit
+    apikey = tenor_api_key
+    lmt = 4
+
+    # our test search
+    search_term_list = ["baby yoda", "baby yoda happy", "mandalorian", "thisistheway", "thisistheway dance"]
+    random_index_search_term = random.randint(0, len(search_term_list) -1)
+    search_term = search_term_list[random_index_search_term]
+
+    # get random results using default locale of EN_US
+    r = requests.get("https://api.tenor.com/v1/random?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
+    url='https://tenor.com/view/baby-yoda-baby-yoda-happy-laughing-smile-happy-gif-16061896'
+    if r.status_code == 200:
+        gifs = json.loads(r.content)
+        #print (gifs)
+        random_index = random.randint(0, len(gifs) -1)
+        url = gifs['results'][random_index]['url']
+
+    return url
+
 def filter_hashtag_messages(update, bot):
     #user text
     if update is not None and update.effective_message.text is not None:
@@ -92,6 +113,8 @@ def filter_hashtag_messages(update, bot):
         palasaca = [
             '#palasaca','#amazon', '#palasaka', '#afiliats', 'compra per afiliats', 'compra feta per afiliats'
         ]
+
+        this_is_the_way = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami']
 
         # Emoji unicode codes
         rocket = u'\U0001f680'
@@ -201,6 +224,7 @@ def filter_hashtag_messages(update, bot):
             bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
+        #afiliats
         if any(hashtag for hashtag in palasaca if hashtag in user_text.lower()):
             random_number = random.randint(0,10)
             if random_number%2 == 0:
@@ -208,6 +232,11 @@ def filter_hashtag_messages(update, bot):
             else:
                 url = get_thanks_gif_url()
                 bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
+
+        #mandalorian
+        if any(hashtag for hashtag in this_is_the_way if hashtag in user_text.lower()):
+            url = get_mandalorian_gif_url()
+            bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
 def webhook(request):
