@@ -191,7 +191,7 @@ def filter_hashtag_messages(update, bot):
 
         if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
 
-            if len(user_text) < 35:
+            if len(user_text) < 20:
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
             else:
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
