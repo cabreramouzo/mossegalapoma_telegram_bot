@@ -4,17 +4,17 @@
 #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
 
 """definition of hastahgs"""
-PROPOSTES = [
+HT_PROPOSTES = [
     '#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis',
     '#propostamosseguis', '#propostamosegui', '#propostamoseguis', '#propostesmosegui',
     '#propostesmoseguis'
 ]
-FEDERATES = [
+HT_FEDERATES = [
     '#federrates','#federrades',
     '#federates', "fe d'errates"
 ]
-PALASACA = [
+HT_PALASACA = [
     '#palasaca','#amazon', '#palasaka', '#afiliats', 'compra per afiliats', 'compra feta per afiliats'
 ]
 
-THISISTHEWAY = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami', '#mandalorian', '#themandalorian']
+HT_THISISTHEWAY = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami', '#mandalorian', '#themandalorian']
