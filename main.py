@@ -7,6 +7,9 @@ import random
 import requests
 import json
 
+from hashtags import HT_PROPOSTES, HT_FEDERATES, HT_PALASACA, HT_THISISTHEWAY
+
+
 INTERNAL_VERSION = '1.0.5'
 G_CLOUD = True
 ''' If the bot is hosted in Google Cloud Function set this constant to True. If false
@@ -100,22 +103,7 @@ def filter_hashtag_messages(update, bot):
         if telegram_user.last_name:
             user_last_name = telegram_user.last_name
         
-        #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
-        hashtags = [
-            '#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis',
-            '#propostamosseguis', '#propostamosegui', '#propostamoseguis', '#propostesmosegui',
-            '#propostesmoseguis'
-        ]
-        federrates = [
-            '#federrates','#federrades',
-            '#federates', "fe d'errates"
-        ]
-        palasaca = [
-            '#palasaca','#amazon', '#palasaka', '#afiliats', 'compra per afiliats', 'compra feta per afiliats'
-        ]
-
-        this_is_the_way = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami', '#mandalorian', '#themandalorian']
-
+        
         # Emoji unicode codes
         rocket = u'\U0001f680'
         closed_mailbox = u'\U0001F4EB'
@@ -212,7 +200,7 @@ def filter_hashtag_messages(update, bot):
 
         text_palasaca = text_reply_palasaca[random_palasaca_text_index]
 
-        if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
+        if any(hashtag for hashtag in HT_PROPOSTES if hashtag in user_text.lower()):
 
             if len(user_text) < 20:
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
@@ -220,12 +208,12 @@ def filter_hashtag_messages(update, bot):
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
                 bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
-        if any(hashtag for hashtag in federrates if hashtag in user_text.lower()):
+        if any(hashtag for hashtag in HT_FEDERATES if hashtag in user_text.lower()):
             bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
         #afiliats
-        if any(hashtag for hashtag in palasaca if hashtag in user_text.lower()):
+        if any(hashtag for hashtag in HT_PALASACA if hashtag in user_text.lower()):
             random_number = random.randint(0,10)
             if random_number%2 == 0:
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
@@ -234,7 +222,7 @@ def filter_hashtag_messages(update, bot):
                 bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
         #mandalorian
-        if any(hashtag for hashtag in this_is_the_way if hashtag in user_text.lower()):
+        if any(hashtag for hashtag in HT_THISISTHEWAY if hashtag in user_text.lower()):
             url = get_mandalorian_gif_url()
             bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
