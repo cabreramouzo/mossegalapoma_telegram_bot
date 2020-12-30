@@ -15,8 +15,8 @@ G_CLOUD = True
 ''' If the bot is hosted in Google Cloud Function set this constant to True. If false
 the bot will run using a busy waiting technique'''
 
-bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
-tenor_api_key = os.environ["TENOR_API_KEY"]
+#bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
+#tenor_api_key = os.environ["TENOR_API_KEY"]
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
 
@@ -87,22 +87,27 @@ def get_mandalorian_gif_url():
 
     return url
 
+def split_user_message_info(update):
+    user_text = update.effective_message.text
+    telegram_user = update.effective_message.from_user
+    user_name = ""
+    user_first_name = "sense_nom"
+    user_last_name = ""
+
+    if telegram_user.username:
+        user_name = telegram_user.username
+    if telegram_user.first_name:
+        user_first_name = telegram_user.first_name
+    if telegram_user.last_name:
+        user_last_name = telegram_user.last_name
+
+    return (user_name, user_first_name, user_last_name, user_text)
+
 def filter_hashtag_messages(update, bot):
     #user text
     if update is not None and update.effective_message.text is not None:
-        user_text = update.effective_message.text
-        telegram_user = update.effective_message.from_user
-        user_name = ""
-        user_first_name = "sense_nom"
-        user_last_name = ""
-
-        if telegram_user.username:
-            user_name = telegram_user.username
-        if telegram_user.first_name:
-            user_first_name = telegram_user.first_name
-        if telegram_user.last_name:
-            user_last_name = telegram_user.last_name
         
+        user_name, user_first_name, user_last_name, user_text = split_user_message_info(update)
         
         # Emoji unicode codes
         rocket = u'\U0001f680'
