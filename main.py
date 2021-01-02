@@ -8,7 +8,7 @@ import requests
 import json
 
 from hashtags import HT_PROPOSTES, HT_FEDERATES, HT_PALASACA, HT_THISISTHEWAY
-from replies import text_troll_reply, text_reply_proposal, text_reply_palasaca, text_rich_reply_proposal
+from replies import text_troll_reply, text_reply_proposal, text_reply_palasaca, text_rich_reply_proposal_netflix, text_rich_reply_proposal_hbo, text_rich_reply_proposal_disney_plus
 
 
 INTERNAL_VERSION = '1.0.5'
@@ -104,6 +104,84 @@ def split_user_message_info(update):
 
     return (user_name, user_first_name, user_last_name, user_text)
 
+def add_username_to_proposal_reply():
+    text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
+    text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
+
+    text_reply_palasaca.append(f"@{user_name}, seguim endavant gràcies a tu {face_blowing_a_kiss}")
+    text_reply_palasaca.append(f"@{user_name}, sense tu això no seria possible {face_blowing_a_kiss}")
+    text_reply_palasaca.append(f"@{user_name}, necessitem mosseguis com tu per tirar això endavant. Merci! {grinning_face_smiling_eyes}")
+    text_reply_palasaca.append(f"Quan tinguem el Tesla, @{user_name} seràs dels primers a provar-lo! {sun_glasses} Paraula de Bot {robot}")
+    text_reply_palasaca.append(f"@{user_name}, saps que en @tomasmanz t'estima molt, oi? Jo en canvi... és complicat. {robot}")
+
+
+def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, user_text):
+
+    if user_name != "":
+        add_username_to_proposal_reply()
+        
+
+    #Add rich response if there is 'serie' or 'sèrie' or 'Netflix' in the message
+    #message_keywords = ['netflix', 'sèrie', 'serie', 'peli']
+    is_rich_response_netflix = False
+    message_keywords_netflix = ['netflix', 'nètflix']
+    if any( keyword for keyword in message_keywords_netflix if keyword in user_text.lower() ):
+        is_rich_response_netflix = True
+        
+    text_reply_errata = [
+        "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
+        "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
+    ]
+    
+    random_troll_text_index = random.randint(0, len(text_troll_reply) -1 )
+    random_rich_proposal_text_index_netflix = random.randint(0, len(text_rich_reply_proposal_netflix) -1 )
+    random_rich_proposal_text_index_hbo = random.randint(0, len(text_rich_reply_proposal_hbo) -1 )
+    random_rich_proposal_text_index_disney_plus = random.randint(0, len(text_rich_reply_proposal_disney_plus) -1 )
+    random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
+    random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
+    random_palasaca_text_index = random.randint(0, len(text_reply_palasaca) -1 )
+
+    text_troll = text_troll_reply[random_troll_text_index]
+
+    if is_rich_response_netflix:
+        text_proposal = text_rich_reply_proposal_netflix[random_rich_proposal_text_index_netflix]
+    else if is_rich_response_hbo:
+        text_proposal = text_rich_reply_proposal_hbo[random_rich_proposal_text_index_hbo]
+    else if is_rich_response_disney_plus:
+        text_proposal = text_rich_reply_proposal_disney_plus[random_rich_proposal_text_index_disney_plus]
+    else:
+        text_proposal = text_reply_proposal[random_proposal_text_index]
+    
+    text_errata = text_reply_errata[random_errata_text_index]
+
+    text_palasaca = text_reply_palasaca[random_palasaca_text_index]
+
+    if any(hashtag for hashtag in HT_PROPOSTES if hashtag in user_text.lower()):
+
+        if len(user_text) < 20:
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
+        else:
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
+            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+
+    if any(hashtag for hashtag in HT_FEDERATES if hashtag in user_text.lower()):
+        bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
+        bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+
+    #afiliats
+    if any(hashtag for hashtag in HT_PALASACA if hashtag in user_text.lower()):
+        random_number = random.randint(0,10)
+        if random_number%2 == 0:
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
+        else:
+            url = get_thanks_gif_url()
+            bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
+
+    #mandalorian
+    if any(hashtag for hashtag in HT_THISISTHEWAY if hashtag in user_text.lower()):
+        url = get_mandalorian_gif_url()
+        bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
+
 def filter_hashtag_messages(update, bot):
     #user text
     if update is not None and update.effective_message.text is not None:
@@ -137,70 +215,7 @@ def filter_hashtag_messages(update, bot):
         water_faucet = u'\U0001F6B0'
         money_bag = u'\U0001F4B0'
 
-        if user_name != "":
-            text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
-            text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
-
-            text_reply_palasaca.append(f"@{user_name}, seguim endavant gràcies a tu {face_blowing_a_kiss}")
-            text_reply_palasaca.append(f"@{user_name}, sense tu això no seria possible {face_blowing_a_kiss}")
-            text_reply_palasaca.append(f"@{user_name}, necessitem mosseguis com tu per tirar això endavant. Merci! {grinning_face_smiling_eyes}")
-            text_reply_palasaca.append(f"Quan tinguem el Tesla, @{user_name} seràs dels primers a provar-lo! {sun_glasses} Paraula de Bot {robot}")
-            text_reply_palasaca.append(f"@{user_name}, saps que en @tomasmanz t'estima molt, oi? Jo en canvi... és complicat. {robot}")
-
-        #Add rich response if there is 'serie' or 'sèrie' or 'Netflix' in the message
-        #message_keywords = ['netflix', 'sèrie', 'serie', 'peli']
-        is_rich_response = False
-        message_keywords = ['netflix', 'nètflix']
-        if any( keyword for keyword in message_keywords if keyword in user_text.lower() ):
-            is_rich_response = True
-            
-        text_reply_errata = [
-            "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
-            "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
-        ]
         
-        random_troll_text_index = random.randint(0, len(text_troll_reply) -1 )
-        random_rich_proposal_text_index = random.randint(0, len(text_rich_reply_proposal) -1 )
-        random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
-        random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
-        random_palasaca_text_index = random.randint(0, len(text_reply_palasaca) -1 )
-
-        text_troll = text_troll_reply[random_troll_text_index]
-
-        if is_rich_response:
-            text_proposal = text_rich_reply_proposal[random_rich_proposal_text_index]
-        else:
-            text_proposal = text_reply_proposal[random_proposal_text_index]
-        
-        text_errata = text_reply_errata[random_errata_text_index]
-
-        text_palasaca = text_reply_palasaca[random_palasaca_text_index]
-
-        if any(hashtag for hashtag in HT_PROPOSTES if hashtag in user_text.lower()):
-
-            if len(user_text) < 20:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
-            else:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
-                bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
-
-        if any(hashtag for hashtag in HT_FEDERATES if hashtag in user_text.lower()):
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
-            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
-
-        #afiliats
-        if any(hashtag for hashtag in HT_PALASACA if hashtag in user_text.lower()):
-            random_number = random.randint(0,10)
-            if random_number%2 == 0:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
-            else:
-                url = get_thanks_gif_url()
-                bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
-
-        #mandalorian
-        if any(hashtag for hashtag in HT_THISISTHEWAY if hashtag in user_text.lower()):
-            url = get_mandalorian_gif_url()
-            bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
 def webhook(request):

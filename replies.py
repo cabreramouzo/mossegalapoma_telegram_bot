@@ -16,7 +16,7 @@ text_reply_palasaca = [
     f"De mica en mica s'omple la pica! {water_faucet}{money_bag}"
 ]
 
-text_rich_reply_proposal = [
+text_rich_reply_proposal_netflix = [
     f"Tota la raó, és del milloret que he vist últimament a Netflix.",
     f"A Netflix oi? La vaig veure ahir vespre! {winking_face}",
     f"Ah, pensava que era d'HBO aquesta...{thinking_face}",
@@ -26,4 +26,28 @@ text_rich_reply_proposal = [
     f"Enganxa eh!? {face_tongue}",
     f"Va, que no tot és Netflix en aquesta vida! {grinning_face_smiling_eyes}",
     f"Podeu deixar de recomanar pelis i sèries a Netflix?! No hi ha qui pugui compilar! {weary_face}",
+]
+
+text_rich_reply_proposal_hbo = [
+    f"Tota la raó, és del milloret que he vist últimament a HBO.",
+    f"A HBO oi? La vaig veure ahir vespre! {winking_face}",
+    f"Ah, pensava que era de Netflix aquesta...{thinking_face}",
+    f"HBO no té massa cosa, però aquesta és bona {face_tongue}",
+    f"Llàstima que em vaig passar a Disney+ fa temps {sun_glasses}",
+    f"Vaja! Ara que he cancel·lat la subscripció la dius... {expression_less}",
+    f"Enganxa eh!? {face_tongue}",
+    f"Va, que no tot és Series i Pelis en aquesta vida! {grinning_face_smiling_eyes}",
+    f"Podeu deixar de recomanar pelis i sèries d'HBO?! No hi ha qui pugui compilar! {weary_face}",
+]
+
+text_rich_reply_proposal_disney_plus = [
+    f"Tota la raó, és del milloret que he vist últimament a Disney+.",
+    f"A Dinsey+ oi? La vaig veure ahir vespre! {winking_face}",
+    f"Ah, pensava que era d'HBO aquesta...{thinking_face}",
+    f"Disney+ té molta cosa per nens, però aquesta em va agradar {face_tongue}",
+    f"Llàstima que em vaig passar al Torrent fa temps {sun_glasses}",
+    f"Vaja! Ara que he cancel·lat la subscripció la dius... {expression_less}",
+    f"Enganxa eh!? {face_tongue}",
+    f"Va, que no tot és Mandalorian en aquesta vida! {grinning_face_smiling_eyes}",
+    f"Podeu deixar de recomanar pelis i sèries a Disney+ ?! No hi ha qui pugui compilar! {weary_face}",
 ]
