@@ -105,21 +105,23 @@ def split_user_message_info(update):
 
     return (user_name, user_first_name, user_last_name, user_text)
 
-def add_username_to_proposal_reply():
-    text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
-    text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
+def add_username_to_proposal_reply(user_name, replies):
+    
+    replies.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
+    replies.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
+    replies.append(f"@{user_name}, seguim endavant gràcies a tu {face_blowing_a_kiss}")
+    replies.append(f"@{user_name}, sense tu això no seria possible {face_blowing_a_kiss}")
+    replies.append(f"@{user_name}, necessitem mosseguis com tu per tirar això endavant. Merci! {grinning_face_smiling_eyes}")
+    replies.append(f"Quan tinguem el Tesla, @{user_name} seràs dels primers a provar-lo! {sun_glasses} Paraula de Bot {robot}")
+    replies.append(f"@{user_name}, saps que en @tomasmanz t'estima molt, oi? Jo en canvi... és complicat. {robot}")
 
-    text_reply_palasaca.append(f"@{user_name}, seguim endavant gràcies a tu {face_blowing_a_kiss}")
-    text_reply_palasaca.append(f"@{user_name}, sense tu això no seria possible {face_blowing_a_kiss}")
-    text_reply_palasaca.append(f"@{user_name}, necessitem mosseguis com tu per tirar això endavant. Merci! {grinning_face_smiling_eyes}")
-    text_reply_palasaca.append(f"Quan tinguem el Tesla, @{user_name} seràs dels primers a provar-lo! {sun_glasses} Paraula de Bot {robot}")
-    text_reply_palasaca.append(f"@{user_name}, saps que en @tomasmanz t'estima molt, oi? Jo en canvi... és complicat. {robot}")
+    return replies
 
 
 def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, user_text):
 
     if user_name != "":
-        add_username_to_proposal_reply()
+        text_reply_proposal = add_username_to_proposal_reply(user_name, text_reply_proposal)
         
 
     #Add rich response if there is 'serie' or 'sèrie' or 'Netflix' in the message
@@ -192,31 +194,31 @@ def filter_hashtag_messages(update, bot):
         
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
-def webhook(request):
-    bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
-    if request.method == 'POST':
-        update = telegram.Update.de_json(request.get_json(force=True), bot)
+# def webhook(request):
+#     bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
+#     if request.method == 'POST':
+#         update = telegram.Update.de_json(request.get_json(force=True), bot)
 
-        filter_hashtag_messages(update, bot)
-    return 'ok'
+#         filter_hashtag_messages(update, bot)
+#     return 'ok'
 
-updater = Updater(token=os.environ["TELEGRAM_TOKEN"], use_context=True)
-job_queue = updater.job_queue
+# updater = Updater(token=os.environ["TELEGRAM_TOKEN"], use_context=True)
+# job_queue = updater.job_queue
 
-thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
-job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
-job_queue.start()
+# thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
+# job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
+# job_queue.start()
 
-if not G_CLOUD:
-    dispatcher = updater.dispatcher
+# if not G_CLOUD:
+#     dispatcher = updater.dispatcher
 
-    #dispatcher.add_handler(CommandHandler('start', start))
-    #dispatcher.add_handler(CommandHandler('help', help))
-    #dispatcher.add_handler(CommandHandler('hora', hora))
+#     #dispatcher.add_handler(CommandHandler('start', start))
+#     #dispatcher.add_handler(CommandHandler('help', help))
+#     #dispatcher.add_handler(CommandHandler('hora', hora))
 
-    unknown_handler = MessageHandler(Filters.command, unknown)
-    dispatcher.add_handler(unknown_handler)
+#     unknown_handler = MessageHandler(Filters.command, unknown)
+#     dispatcher.add_handler(unknown_handler)
 
-    dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
+#     dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
 
-    updater.start_polling()
+#     updater.start_polling()
