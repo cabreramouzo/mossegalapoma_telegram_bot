@@ -145,9 +145,9 @@ def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, 
 
     if is_rich_response_netflix:
         text_proposal = text_rich_reply_proposal_netflix[random_rich_proposal_text_index_netflix]
-    else if is_rich_response_hbo:
+    elif is_rich_response_hbo:
         text_proposal = text_rich_reply_proposal_hbo[random_rich_proposal_text_index_hbo]
-    else if is_rich_response_disney_plus:
+    elif is_rich_response_disney_plus:
         text_proposal = text_rich_reply_proposal_disney_plus[random_rich_proposal_text_index_disney_plus]
     else:
         text_proposal = text_reply_proposal[random_proposal_text_index]
