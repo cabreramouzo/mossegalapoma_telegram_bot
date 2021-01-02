@@ -1,3 +1,5 @@
+from emoji_unicode import *
+
 text_troll_reply = [
     f"Això no té pinta de proposta... {unamused_face}", f"Ets un troll!!! {tongue_out}",
     f"Ho tens clar! {expression_less}", f"Alerta...TROLL!!! {siren}{siren}{siren}"
