@@ -197,19 +197,26 @@ def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, 
 
     text_palasaca = text_reply_palasaca[random_palasaca_text_index]
 
-    def send_message(bot, to, message_to_reply, message):
+    def send_message(bot, to, message_to_reply, reply_type):
+        #TODO: hay 2 tipos de message, los que van al grupo interno y los de simple respuesta al usuario
+        #TODO: Recordar las message entities
+
+        message = generate_random_response_for(reply_type)
 
         bot.send_message(chat_id=to, reply_to_message_id=message_to_reply, text=message)
 
+    def generate_proposal_internal_message(user_name, user_first_name, user_last_name, user_text):
+        return user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text
 
     def look_for_hashtags_and_send_response(bot, update, user_text):
 
         if any(hashtag for hashtag in HT_PROPOSTES if hashtag in user_text.lower()):
 
             if len(user_text) < 20:
-                send_message(bot=bot, to=update.effective_chat.id, message_to_reply=update.effective_message.message_id, text=text_troll)
+                send_message(bot=bot, to=update.effective_chat.id, message_to_reply=update.effective_message.message_id, reply_type="troll")
             else:
                 bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
+                send_message(bot=bot, to=update.effective_chat.id, message_to_reply=update.effective_message.message_id, reply_type="proposta")
                 bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
         if any(hashtag for hashtag in HT_FEDERATES if hashtag in user_text.lower()):
@@ -231,6 +238,14 @@ def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, 
             bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
 def filter_hashtag_messages(update, bot):
+
+    message_entities = update.effective_message.entities
+
+    def update_entities_offset_by(offset: int):
+         print(f"el offset es {offset}")
+         for entity in message_entities:
+             entity.offset += offset
+
     #user text
     if update is not None and update.effective_message.text is not None:
         
