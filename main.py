@@ -8,7 +8,7 @@ import requests
 import json
 
 from hashtags import HT_PROPOSTES, HT_FEDERATES, HT_PALASACA, HT_THISISTHEWAY
-from replies import text_troll_reply, text_reply_proposal, text_reply_errata, text_reply_palasaca, text_rich_reply_proposal_netflix, text_rich_reply_proposal_hbo, text_rich_reply_proposal_disney_plus
+from replies import text_troll_reply, text_reply_proposal, text_reply_errata, text_reply_palasaca, text_rich_reply_proposal_netflix, text_rich_reply_proposal_hbo, text_rich_reply_proposal_disney_plus, text_reply_errata
 from emoji_unicode import *
 
 
@@ -138,6 +138,36 @@ def generate_random_index_for_reply(reply_type):
     
     return randint
 
+def generate_random_response_for(reply_type):
+
+    randint = generate_random_index_for_reply(reply_type)
+    response = ""
+
+    if reply_type == 'proposta':
+        response = text_reply_proposal[randint]
+
+    elif reply_type == 'errata':
+        response = text_reply_errata[randint]
+
+    elif reply_type == 'troll':
+        response = text_troll_reply[randint]
+
+    elif reply_type == 'netflix':
+        response = text_rich_reply_proposal_netflix[randint]
+
+    elif reply_type == 'hbo':
+        response = text_rich_reply_proposal_hbo[randint]
+
+    elif reply_type == 'disney_plus':
+        response = text_rich_reply_proposal_disney_plus[randint]
+
+    elif reply_type == 'palasaca':
+        response = text_reply_palasaca[randint]
+    
+    return response
+
+
+
 def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, user_text):
 
     if user_name != "":
@@ -150,19 +180,7 @@ def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, 
     message_keywords_netflix = ['netflix', 'nètflix']
     if any( keyword for keyword in message_keywords_netflix if keyword in user_text.lower() ):
         is_rich_response_netflix = True
-        
-    text_reply_errata = [
-        "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
-        "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
-    ]
     
-    random_troll_text_index = random.randint(0, len(text_troll_reply) -1 )
-    random_rich_proposal_text_index_netflix = random.randint(0, len(text_rich_reply_proposal_netflix) -1 )
-    random_rich_proposal_text_index_hbo = random.randint(0, len(text_rich_reply_proposal_hbo) -1 )
-    random_rich_proposal_text_index_disney_plus = random.randint(0, len(text_rich_reply_proposal_disney_plus) -1 )
-    random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
-    random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
-    random_palasaca_text_index = random.randint(0, len(text_reply_palasaca) -1 )
 
     text_troll = text_troll_reply[random_troll_text_index]
 

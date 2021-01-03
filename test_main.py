@@ -1,4 +1,4 @@
-from main import split_user_message_info, add_username_to_proposal_reply, add_username_to_proposal_reply, generate_random_index_for_reply
+from main import split_user_message_info, add_username_to_proposal_reply, add_username_to_proposal_reply, generate_random_index_for_reply, generate_random_response_for
 from replies import text_reply_proposal, text_reply_errata, text_reply_palasaca, text_rich_reply_proposal_disney_plus, text_rich_reply_proposal_hbo, text_rich_reply_proposal_netflix, text_troll_reply
 from emoji_unicode import *
 
@@ -39,7 +39,7 @@ def test_split_user_info():
 
 def test_add_username_to_proposal_reply():
 	user_name = 'macma'
-	len_old = len( text_reply_proposal )
+	len_old =  len( text_reply_proposal )
 	replies = add_username_to_proposal_reply('macma', text_reply_proposal)
 	expected = [
 		f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}",
@@ -85,3 +85,29 @@ def test_generate_random_int_reply():
 		assert randint >= 0 and randint <= get_type_len(type_)
 
 		
+def test_generate_random_reply_for_type():
+
+	types = ['proposta','errata','disney_plus','netflix','hbo','troll','palasaca']
+
+	def get_reply_list(type_):
+		if type_ == 'proposta':
+			return text_reply_proposal
+		elif type_ == 'errata':
+			return text_reply_errata
+		elif type_ == 'disney_plus':
+			return text_rich_reply_proposal_disney_plus
+		elif type_ == 'netflix':
+			return text_rich_reply_proposal_netflix
+		elif type_ == 'hbo':
+			return text_rich_reply_proposal_hbo
+		elif type_ == 'troll':
+			return text_troll_reply
+		elif type_ == 'palasaca':
+			return text_reply_palasaca
+		
+
+	for type_ in types:
+		response = generate_random_response_for(type_)
+		assert response in get_reply_list(type_)
+
+			
