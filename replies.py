@@ -18,6 +18,11 @@ text_reply_palasaca = [
     f"De mica en mica s'omple la pica! {water_faucet}{money_bag}"
 ]
 
+text_reply_errata = [
+        "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
+        "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
+]
+
 text_rich_reply_proposal_netflix = [
     f"Tota la raó, és del milloret que he vist últimament a Netflix.",
     f"A Netflix oi? La vaig veure ahir vespre! {winking_face}",

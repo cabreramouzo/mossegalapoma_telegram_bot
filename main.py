@@ -8,7 +8,7 @@ import requests
 import json
 
 from hashtags import HT_PROPOSTES, HT_FEDERATES, HT_PALASACA, HT_THISISTHEWAY
-from replies import text_troll_reply, text_reply_proposal, text_reply_palasaca, text_rich_reply_proposal_netflix, text_rich_reply_proposal_hbo, text_rich_reply_proposal_disney_plus
+from replies import text_troll_reply, text_reply_proposal, text_reply_errata, text_reply_palasaca, text_rich_reply_proposal_netflix, text_rich_reply_proposal_hbo, text_rich_reply_proposal_disney_plus
 from emoji_unicode import *
 
 
@@ -117,6 +117,26 @@ def add_username_to_proposal_reply(user_name, replies):
 
     return replies
 
+def generate_random_index_for_reply(reply_type):
+    
+    randint = 0
+
+    if reply_type == 'proposta':
+        randint = random.randint(0, len(text_reply_proposal) -1 )
+    elif reply_type == 'errata':
+        randint = random.randint(0, len(text_reply_errata) -1 )
+    elif reply_type == 'troll':
+        randint = random.randint(0, len(text_troll_reply) -1 )
+    elif reply_type == 'netflix':
+        randint = random.randint(0, len(text_rich_reply_proposal_netflix) -1 )
+    elif reply_type == 'hbo':
+        randint = random.randint(0, len(text_rich_reply_proposal_hbo) -1 )
+    elif reply_type == 'disney_plus':
+        randint = random.randint(0, len(text_rich_reply_proposal_disney_plus) -1 )
+    elif reply_type == 'palasaca':
+        randint = random.randint(0, len(text_reply_palasaca) -1 )
+    
+    return randint
 
 def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, user_text):
 
@@ -159,31 +179,38 @@ def find_hashtags_and_send_response(user_name, user_first_name, user_last_name, 
 
     text_palasaca = text_reply_palasaca[random_palasaca_text_index]
 
-    if any(hashtag for hashtag in HT_PROPOSTES if hashtag in user_text.lower()):
+    def send_message(bot, to, message_to_reply, message):
 
-        if len(user_text) < 20:
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
-        else:
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
+        bot.send_message(chat_id=to, reply_to_message_id=message_to_reply, text=message)
+
+
+    def look_for_hashtags_and_send_response(bot, update, user_text):
+
+        if any(hashtag for hashtag in HT_PROPOSTES if hashtag in user_text.lower()):
+
+            if len(user_text) < 20:
+                send_message(bot=bot, to=update.effective_chat.id, message_to_reply=update.effective_message.message_id, text=text_troll)
+            else:
+                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
+                bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+
+        if any(hashtag for hashtag in HT_FEDERATES if hashtag in user_text.lower()):
+            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
             bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
 
-    if any(hashtag for hashtag in HT_FEDERATES if hashtag in user_text.lower()):
-        bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
-        bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text)
+        #afiliats
+        if any(hashtag for hashtag in HT_PALASACA if hashtag in user_text.lower()):
+            random_number = random.randint(0,10)
+            if random_number%2 == 0:
+                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
+            else:
+                url = get_thanks_gif_url()
+                bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
-    #afiliats
-    if any(hashtag for hashtag in HT_PALASACA if hashtag in user_text.lower()):
-        random_number = random.randint(0,10)
-        if random_number%2 == 0:
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
-        else:
-            url = get_thanks_gif_url()
+        #mandalorian
+        if any(hashtag for hashtag in HT_THISISTHEWAY if hashtag in user_text.lower()):
+            url = get_mandalorian_gif_url()
             bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
-
-    #mandalorian
-    if any(hashtag for hashtag in HT_THISISTHEWAY if hashtag in user_text.lower()):
-        url = get_mandalorian_gif_url()
-        bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
 
 def filter_hashtag_messages(update, bot):
     #user text

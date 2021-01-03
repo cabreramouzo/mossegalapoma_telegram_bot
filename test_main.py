@@ -1,5 +1,5 @@
-from main import split_user_message_info, add_username_to_proposal_reply, add_username_to_proposal_reply
-from replies import text_reply_proposal
+from main import split_user_message_info, add_username_to_proposal_reply, add_username_to_proposal_reply, generate_random_index_for_reply
+from replies import text_reply_proposal, text_reply_errata, text_reply_palasaca, text_rich_reply_proposal_disney_plus, text_rich_reply_proposal_hbo, text_rich_reply_proposal_netflix, text_troll_reply
 from emoji_unicode import *
 
 def test_split_user_info():
@@ -55,3 +55,33 @@ def test_add_username_to_proposal_reply():
 	assert len(replies) == len_old + len(expected)
 	for phrase in expected:
 		assert phrase in replies
+	
+def xtest_look_for_hashtags():
+	pass
+
+def test_generate_random_int_reply():
+
+	types = ['proposta','errata','disney_plus','netflix','hbo','troll','palasaca']
+
+	def get_type_len(type_):
+		if type_ == 'proposta':
+			return len(text_reply_proposal)
+		elif type_ == 'errata':
+			return len(text_troll_reply)
+		elif type_ == 'disney_plus':
+			return len(text_rich_reply_proposal_disney_plus)
+		elif type_ == 'netflix':
+			return len(text_rich_reply_proposal_netflix)
+		elif type_ == 'hbo':
+			return len(text_rich_reply_proposal_hbo)
+		elif type_ == 'troll':
+			return len(text_troll_reply)
+		elif type_ == 'palasaca':
+			return len(text_reply_palasaca)
+		
+
+	for type_ in types:
+		randint = generate_random_index_for_reply(type_)
+		assert randint >= 0 and randint <= get_type_len(type_)
+
+		
