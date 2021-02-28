@@ -84,12 +84,42 @@ def get_mandalorian_gif_url():
 
     return url
 
+
 def filter_hashtag_messages(update, bot):
 
     def update_entities_offset_by(offset: int):
         print(f"el offset es {offset}")
         for entity in message_entities:
             entity.offset += offset
+
+    def add_afiliats_tag(update):
+        message_with_link = update.effective_message.text
+        url_entities_dict = update.effective_message.parse_entities(types = [MessageEntity.URL, MessageEntity.TEXT_LINK])
+        amazon_links = []
+        for entity in url_entities_dict:
+            if entity == MessageEntity.URL:
+                amazon_links.append(url_entities_dict[entity].url)
+
+            else if entity == MessageEntity.TEXT_LINK:
+                amazon_links.append(entities[entity])
+
+        link_replies = []
+        for link in amazon_links:
+
+            link_reply = amazon_link + '&tag=mlpgestio05-21'
+            link_reply_url_entity = telegram.MessageEntity(
+                type = telegram.constants.MESSAGEENTITY_URL,
+                offset = 0,
+                length = len(link_reply),
+                url = link,
+            )
+
+            link_replies.append( (link_reply,link_reply_url_entity) )
+        return link_replies
+
+
+
+
 
     #user text
     if update is not None and update.effective_message.text is not None:
@@ -122,10 +152,12 @@ def filter_hashtag_messages(update, bot):
             '#federates', "fe d'errates"
         ]
         palasaca = [
-            '#palasaca','#amazon', '#palasaka', '#afiliats', 'compra per afiliats', 'compra feta per afiliats'
+            '#palasaca','#amazon', '#palasaka', '#afiliats', 'compra per afiliats', 'compra feta per afiliats', 'comprat via afiliats', 'compra via afiliats'
         ]
 
         this_is_the_way = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami', '#mandalorian', '#themandalorian']
+
+        links_amazon = ['amazon.com', 'amazon.es']
 
         # Emoji unicode codes
         rocket = u'\U0001f680'
@@ -184,6 +216,10 @@ def filter_hashtag_messages(update, bot):
             f"Podeu deixar de recomanar pelis i sèries a Netflix?! No hi ha qui pugui compilar! {weary_face}",
         ]
 
+        text_reply_afiliats_link = [
+            f"M'ha semblat veure un link d'Amazon sense afiliats {thinking_face}: "
+        ]
+
         if user_name != "":
             text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
             text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
@@ -211,8 +247,10 @@ def filter_hashtag_messages(update, bot):
         random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
         random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
         random_palasaca_text_index = random.randint(0, len(text_reply_palasaca) -1 )
+        random_afiliats_link_text_index = random.randint(0, len(text_reply_afiliats_link) -1 )
 
         text_troll = text_troll_reply[random_troll_text_index]
+        text_afiliats_link = text_reply_afiliats_link[random_afiliats_link_text_index]
 
         if is_rich_response:
             text_proposal = text_rich_reply_proposal[random_rich_proposal_text_index]
@@ -248,6 +286,17 @@ def filter_hashtag_messages(update, bot):
         if any(hashtag for hashtag in this_is_the_way if hashtag in user_text.lower()):
             url = get_mandalorian_gif_url()
             bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
+
+        #Amazon link without afiliats
+        if any(link for link in links_amazon if link in user_text.lower()):
+            reply_links = add_afiliats_tag(update)
+            if len(reply_links) > 0:
+                for tuple_message_entity in reply_links:
+                message, entity = tuple_message_entity
+                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_afiliats_link)
+                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=message, entities=entity)
+
+
 
 #based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
 def webhook(request):
