@@ -261,8 +261,8 @@ def webhook(request):
 updater = Updater(token=os.environ["TELEGRAM_TOKEN"], use_context=True)
 job_queue = updater.job_queue
 
-thuesday_at_14 = datetime.time(hour=16, minute=0, second=0)
-job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (1,))
+thuesday_at_14 = datetime.time(hour=14, minute=0, second=0) #hour is in UTC
+job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (2,)) #Wednesday
 job_queue.start()
 
 if not G_CLOUD:
