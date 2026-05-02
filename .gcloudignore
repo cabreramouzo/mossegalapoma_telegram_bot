@@ -18,4 +18,10 @@ node_modules
 .venv
 tests/
 requirements-dev.txt
+__pycache__
+*.pyc
+.coverage
+.pytest_cache
+README.md
+
 #!include:.gitignore

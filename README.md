@@ -11,8 +11,8 @@ Quan un membre del grup escriu un missatge amb un hashtag de proposta (per exemp
 
 Hi ha tres casos:
 - **Missatge directe** — el hashtag va al mateix missatge que la proposta. El bot confirma la recepció i envia el contingut al grup de propostes amb el nom de l'autor.
-- **Resposta a un missatge** — el hashtag va en un reply sobre un missatge existent. El bot reenvía el missatge original (amb el cap de "Reenviat de...") i afegeix un comentari amb qui l'ha proposat.
-- **Missatge editat** — si s'edita un missatge que ja tenia un hashtag de proposta, el bot torna a processar-lo i avisa al grup de propostes que hi ha hagut un canvi (amb el cap ✏️).
+- **Resposta a un missatge** — el hashtag va en un reply sobre un missatge existent. El bot reenvía el missatge original (amb la capçalera "Reenviat de...") i afegeix un comentari amb qui l'ha proposat.
+- **Missatge editat** — si s'edita un missatge que ja tenia un hashtag de proposta, el bot torna a processar-lo i avisa al grup de propostes que hi ha hagut un canvi (amb la capçalera ✏️).
 
 El format original del missatge (negreta, cursiva, tatxat, etc.) es preserva correctament al reenviar-lo.
 
