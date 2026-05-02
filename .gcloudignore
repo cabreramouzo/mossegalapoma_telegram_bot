@@ -15,4 +15,7 @@
 token.txt
 
 node_modules
+.venv
+tests/
+requirements-dev.txt
 #!include:.gitignore

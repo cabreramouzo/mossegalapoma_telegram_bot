@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
+from telegram import MessageEntity
 from main import handle_direct_proposal, handle_reply_proposal
 
 @pytest.mark.asyncio
@@ -42,7 +43,7 @@ async def test_direct_photo_with_caption(mock_msg_factory):
 async def test_reply_original_is_text(mock_msg_factory):
     """Caso: Mensaje A (Texto) <- Mensaje B (#proposta)"""
     mock_context = MagicMock()
-    mock_context.bot.copy_message = AsyncMock(return_value=MagicMock(message_id=100))
+    mock_context.bot.forward_message = AsyncMock(return_value=MagicMock(message_id=100))
     mock_context.bot.send_message = AsyncMock()
     
     msg_b = mock_msg_factory(text="#proposta comentario")
@@ -53,19 +54,19 @@ async def test_reply_original_is_text(mock_msg_factory):
     
     await handle_reply_proposal(update, mock_context, is_proposal=True)
     
-    # Verificamos que copia el mensaje A
-    assert mock_context.bot.copy_message.called
+    # Verificamos que reenvía el mensaje A
+    assert mock_context.bot.forward_message.called
     # Verificamos que el comentario del mensaje B va en el segundo mensaje
     args, kwargs = mock_context.bot.send_message.call_args
     assert "comentario" in kwargs['text']
-    assert "Esta es la idea original" not in kwargs['text'] # Porque va en el copy_message
+    assert "Esta es la idea original" not in kwargs['text'] # Porque va en el forward_message
 
 @pytest.mark.asyncio
 async def test_reply_original_is_image(mock_msg_factory):
     """Caso: Mensaje A (Foto) <- Mensaje B (#proposta)"""
     mock_context = MagicMock()
-    # copy_message DEBE ser AsyncMock porque usas await
-    mock_context.bot.copy_message = AsyncMock(return_value=MagicMock(message_id=101))
+    # forward_message DEBE ser AsyncMock porque usas await
+    mock_context.bot.forward_message = AsyncMock(return_value=MagicMock(message_id=101))
     # send_message DEBE ser AsyncMock porque usas await
     mock_context.bot.send_message = AsyncMock()
     
@@ -85,5 +86,43 @@ async def test_reply_original_is_image(mock_msg_factory):
     await handle_reply_proposal(update, mock_context, is_proposal=True)
     
     # Verificación
-    assert mock_context.bot.copy_message.called
-    assert mock_context.bot.copy_message.call_args.kwargs['message_id'] == 999
+    assert mock_context.bot.forward_message.called
+    assert mock_context.bot.forward_message.call_args.kwargs['message_id'] == 999
+
+
+@pytest.mark.asyncio
+async def test_direct_proposal_preserves_formatting(mock_msg_factory):
+    """
+    Bold/strikethrough/italic entities from the original message must be
+    forwarded to the proposals group with their offsets shifted to account
+    for the prepended header string.
+    """
+    from handlers import handle_direct_proposal, shift_entities
+
+    mock_context = MagicMock()
+    mock_context.bot.send_message = AsyncMock()
+
+    msg = mock_msg_factory(text="Proposta amb text en negreta #proposta i contingut")
+    # Simulate a bold entity starting at offset 14 ("text en negreta")
+    bold_entity = MessageEntity(type=MessageEntity.BOLD, offset=14, length=15)
+    msg.entities = [bold_entity]
+
+    update = MagicMock(effective_message=msg, edited_message=None)
+
+    await handle_direct_proposal(update, mock_context, is_proposal=True)
+
+    assert mock_context.bot.send_message.called
+    call_kwargs = mock_context.bot.send_message.call_args.kwargs
+
+    # Must use entities, not parse_mode, to preserve formatting
+    assert call_kwargs.get('parse_mode') is None
+    assert 'entities' in call_kwargs
+    sent_entities = call_kwargs['entities']
+    assert len(sent_entities) == 1
+    assert sent_entities[0].type == MessageEntity.BOLD
+
+    # Offset must be shifted by the UTF-16 length of the header
+    header = "💡 Proposta de user_test (TestName TestLast): "
+    expected_shift = len(header.encode('utf-16-le')) // 2
+    assert sent_entities[0].offset == bold_entity.offset + expected_shift
+    assert sent_entities[0].length == bold_entity.length

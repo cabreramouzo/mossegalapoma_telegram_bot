@@ -18,6 +18,7 @@ async def test_main_handler_forward_format():
     mock_msg.from_user.username = "joan_demo"
     mock_msg.from_user.first_name = "Joan"
     mock_msg.from_user.last_name = "García"
+    mock_msg.reply_to_message = None
     
     await main_handler(mock_update, mock_context)
 
@@ -29,7 +30,7 @@ async def test_main_handler_forward_format():
 @pytest.mark.asyncio
 async def test_photo_caption_with_hashtag():
     with patch('main.random.random', return_value=0.1), \
-         patch('main.add_afiliats_tag', new_callable=AsyncMock, return_value=[]):
+         patch('amazon.add_afiliats_tag', new_callable=AsyncMock, return_value=[]):
         
         import main
         main.PALASACA = ["#palasaca"]

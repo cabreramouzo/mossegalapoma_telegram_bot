@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from main import get_real_url_from_shortlink, add_afiliats_tag
+from amazon import get_real_url_from_shortlink
 
 @patch('requests.get')
 def test_get_real_url_success(mock_get):

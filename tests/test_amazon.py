@@ -4,7 +4,7 @@ from main import main_handler
 
 @pytest.mark.asyncio
 async def test_amazon_shortlink_conversion():
-    with patch('main.get_real_url_from_shortlink') as mock_resolve:
+    with patch('amazon.get_real_url_from_shortlink') as mock_resolve:
         mock_resolve.return_value = "https://www.amazon.es/dp/B0123456"
         
         mock_update = MagicMock()
@@ -13,7 +13,7 @@ async def test_amazon_shortlink_conversion():
         # 1. El mensaje es asíncrono (para reply_text), 
         # pero parse_entities DEBE ser síncrono
         mock_msg = AsyncMock()
-        mock_msg.parse_entities = MagicMock() # <--- LA CLAVE ES ESTA LÍNEA
+        mock_msg.parse_entities = MagicMock()
         
         mock_update.effective_message = mock_msg
         mock_msg.text = "Mira esto: https://amzn.eu/d/5L8fG1"

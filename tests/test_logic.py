@@ -12,6 +12,8 @@ async def test_troll_detection_short_message():
     # Mensaje de menos de 20 caracteres
     mock_msg.text = "Esto es #proposta" 
     mock_msg.from_user.username = "troll_man"
+    mock_msg.reply_to_message = None
+    mock_update.edited_message = None
     
     await main_handler(mock_update, mock_context)
     
