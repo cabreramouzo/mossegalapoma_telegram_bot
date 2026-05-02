@@ -1,7 +1,7 @@
 from telegram import Update, MessageEntity, constants
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 import random
-from constants import GROUP_PROPOSALS, TEXT_REPLY_ERRATA, TEXT_REPLY_PROPOSAL, TEXT_REPLY_EDITED_PROPOSAL, TEXT_REPLY_PALASACA
+from constants import GROUP_PROPOSALS, TEXT_REPLY_ERRATA, TEXT_REPLY_PROPOSAL, TEXT_REPLY_EDITED_PROPOSAL, TEXT_REPLY_PALASACA, TEXT_REPLY_NETFLIX
 from utils import get_giphy_url
 
 
@@ -31,7 +31,7 @@ async def handle_reply_proposal(update, context, is_proposal):
     msg = update.effective_message
     target_msg = msg.reply_to_message
     content_text = (target_msg.text or target_msg.caption or "")
-    
+    print(f"Group id {msg.chat_id} - User {target_msg.from_user.id} - Content: {content_text[:30]}...")
     # Confirmation in the group
     await msg.reply_text(random.choice(TEXT_REPLY_PROPOSAL) if is_proposal else random.choice(TEXT_REPLY_ERRATA))
 
@@ -119,8 +119,10 @@ async def handle_edited_proposal(update, context, is_proposal):
             caption_entities=shift_entities(msg.caption_entities, header),
         )
 
+async def handle_netflix_mention(msg):
+    """Replies with a random Netflix-themed comment."""
+    await msg.reply_text(random.choice(TEXT_REPLY_NETFLIX))
 
-# PALASACA THANKS
 
 async def handle_palasaca(msg):
     """Handles thank-you replies and GIFs."""

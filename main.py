@@ -5,7 +5,7 @@ from telegram import Update, MessageEntity, constants
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 from constants import *
 from amazon import handle_amazon_links
-from handlers import handle_direct_proposal, handle_edited_proposal, handle_reply_proposal, handle_palasaca
+from handlers import handle_direct_proposal, handle_edited_proposal, handle_reply_proposal, handle_palasaca, handle_netflix_mention
 from utils import get_giphy_url
 
 # --- INITIALIZATION ---
@@ -68,7 +68,11 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if any(h in user_text_low for h in PALASACA):
         await handle_palasaca(msg)
 
-    # 4. Mandalorian easter egg
+    # 4. Netflix mention
+    if any(k in user_text_low for k in NETFLIX_KEYWORDS):
+        await handle_netflix_mention(msg)
+
+    # 5. Mandalorian easter egg
     if any(h in user_text_low for h in THIS_IS_THE_WAY):
         gif = get_giphy_url(["baby yoda", "mandalorian", "thisistheway"])
         if gif: await msg.reply_animation(gif)

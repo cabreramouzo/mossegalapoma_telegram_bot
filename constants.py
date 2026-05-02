@@ -57,3 +57,17 @@ TEXT_REPLY_AFILIATS_LINK = [
     f"Gràcies per recomanar un producte! Li afegeixo l'enllaç d'afiliats 😜: ",
     f"Amazon? Afiliats!!! 🔥💰: ", f"Enllaç d'afiliats al canto! 🚨: "
 ]
+
+NETFLIX_KEYWORDS = ['netflix', 'nètflix']
+
+TEXT_REPLY_NETFLIX = [
+    "Tota la raó, és del milloret que he vist últimament a Netflix.",
+    "A Netflix oi? La vaig veure ahir vespre! 😉",
+    "Ah, pensava que era d'HBO aquesta... 🤔",
+    "Netflix té merda per un tub, però també de bones i aquesta n'és una 😛",
+    "Llàstima que em vaig passar a Disney+ fa temps 😎",
+    "Vaja! Ara que he cancel·lat la subscripció la dius... 😑",
+    "Enganxa eh!? 😛",
+    "Va, que no tot és Netflix en aquesta vida! 😁",
+    "Podeu deixar de recomanar pelis i sèries a Netflix?! No hi ha qui pugui compilar! 😩",
+]
