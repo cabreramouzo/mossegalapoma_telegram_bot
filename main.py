@@ -1,280 +1,106 @@
-import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import datetime
 import logging
-import os
 import random
-import requests
-import json
+import functions_framework
+from telegram import Update, MessageEntity, constants
+from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from constants import *
+from amazon import handle_amazon_links
+from handlers import handle_direct_proposal, handle_edited_proposal, handle_reply_proposal, handle_palasaca
+from utils import get_giphy_url
 
-INTERNAL_VERSION = '1.0.6'
-G_CLOUD = True
-''' If the bot is hosted in Google Cloud Function set this constant to True. If false
-the bot will run using a busy waiting technique'''
+# --- INITIALIZATION ---
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
-tenor_api_key = os.environ["TENOR_API_KEY"]
+# Global application instance - lazily initialized on first request
+_application = None
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
+def get_application():
+    """Build and configure the application once per process instance."""
+    global _application
+    if _application is None:
+        _application = Application.builder().token(TELEGRAM_TOKEN).build()
+        _application.add_handler(MessageHandler(filters.TEXT | filters.CAPTION, main_handler))
+    return _application
 
-def message_for_thuesday(context: telegram.ext.CallbackContext):
-    context.bot.send_message(chat_id=-291751171, 
-                            text="*Propostes d'aquesta setmana*:", 
-                            parse_mode=telegram.ParseMode.MARKDOWN_V2)
-                            
+async def hora(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Replies with the current date and time."""
+    from datetime import datetime
+    now = datetime.now()
+    await update.effective_message.reply_text(
+        f"Ara són les {now.strftime('%H:%M')} del {now.strftime('%d/%m/%Y')}"
+    )
 
-# defineix una funció que saluda i que s'executarà quan el bot rebi el missatge /start
-def start(update, bot):
-    bot.send_message(chat_id=update.effective_chat.id, text="Hola! Sóc un bot bàsic per a mossegalapoma!.")
+async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Single handler that manages all hashtag and link logic."""
+    msg = update.effective_message
+    if not msg or not (msg.text or msg.caption):
+        return
 
-def help(update, bot):
-    bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Sóc un bot amb comandes /start, /help i /hora.")
+    user_text = (msg.text or msg.caption or "")
+    user_text_low = user_text.lower()
+    user = msg.from_user
+    
+    # User identification for forwarding
+    user_display = f"{user.username} ({user.first_name} {user.last_name or ''})"
+    forward_header = f"{user_display}: "
 
+    # 1. Amazon logic (links without affiliate tag)
+    if any(dom in user_text_low for dom in ['amazon.es', 'amazon.com', 'amzn.eu']):
+        await handle_amazon_links(msg)
 
-def hora(update, bot):
-    missatge = str(datetime.datetime.now())
-    bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=missatge)
+    # 2. Proposal and errata logic
+    is_proposal = any(h in user_text_low for h in HASHTAGS_PROPOSTA)
+    is_errata = any(h in user_text_low for h in FEDERRATES)
 
-def unknown(update, bot):
-    bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.message.message_id, text="Perdona però no entenc aquesta comanda 🤨")
-
-def get_thanks_gif_url():
-    # set the apikey and limit
-    apikey = tenor_api_key
-    lmt = 4
-
-    # our test search
-    search_term_list = ["cute cat", "kitty love", "love animal", "thank you", "cute animal", "love you" ]
-    random_index_search_term = random.randint(0, len(search_term_list) -1)
-    search_term = search_term_list[random_index_search_term]
-
-    # get random results using default locale of EN_US
-    r = requests.get("https://api.tenor.com/v1/search?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
-    url='https://tenor.com/view/funny-animals-cat-love-cat-hug-gif-14233808'
-    if r.status_code == 200:
-        gifs = json.loads(r.content)
-        #print (gifs)
-        random_index = random.randint(0, len(gifs) -1)
-        url = gifs['results'][random_index]['url']
-
-    return url
-
-def get_mandalorian_gif_url():
-    # set the apikey and limit
-    apikey = tenor_api_key
-    lmt = 4
-
-    # our test search
-    search_term_list = ["baby yoda", "baby yoda happy", "mandalorian", "thisistheway"]
-    random_index_search_term = random.randint(0, len(search_term_list) -1)
-    search_term = search_term_list[random_index_search_term]
-
-    # get random results using default locale of EN_US
-    r = requests.get("https://api.tenor.com/v1/search?q=%s&key=%s&limit=%s&media_filter=minimal" % (search_term, apikey, lmt))
-    url='https://tenor.com/view/baby-yoda-baby-yoda-happy-laughing-smile-happy-gif-16061896'
-    if r.status_code == 200:
-        gifs = json.loads(r.content)
-        #print (gifs)
-        random_index = random.randint(0, len(gifs) -1)
-        url = gifs['results'][random_index]['url']
-
-    return url
-
-def filter_hashtag_messages(update, bot):
-
-    def update_entities_offset_by(offset: int):
-        print(f"el offset es {offset}")
-        for entity in message_entities:
-            entity.offset += offset
-
-    #user text
-    if update is not None and update.effective_message.text is not None:
-        user_text = update.effective_message.text
-        telegram_user = update.effective_message.from_user
-        user_name = ""
-        user_first_name = "sense_nom"
-        user_last_name = ""
-
-        message_entities = update.effective_message.entities
-
-        if telegram_user.username:
-            user_name = telegram_user.username
-        if telegram_user.first_name:
-            user_first_name = telegram_user.first_name
-        if telegram_user.last_name:
-            user_last_name = telegram_user.last_name
-
-        prompt = user_name + "("+ user_first_name + " " + user_last_name + "): "
-        update_entities_offset_by( len( prompt) )
-        
-        #filter #propostamossegui or #proposta or #propostesmossegui or #propostamosseguis text messages
-        hashtags = [
-            '#propostamossegui','#proposta','#propostesmossegui', '#propostesmosseguis',
-            '#propostamosseguis', '#propostamosegui', '#propostamoseguis', '#propostesmosegui',
-            '#propostesmoseguis'
-        ]
-        federrates = [
-            '#federrates','#federrades',
-            '#federates', "fe d'errates"
-        ]
-        palasaca = [
-            '#palasaca','#amazon', '#palasaka', '#afiliats', 'compra per afiliats', 'compra feta per afiliats'
-        ]
-
-        this_is_the_way = ['#thisistheway', '#thiswastheway', '#aquesteselcami', '#this_is_the_way', '#aquest_es_el_cami', '#mandalorian', '#themandalorian']
-
-        # Emoji unicode codes
-        rocket = u'\U0001f680'
-        closed_mailbox = u'\U0001F4EB'
-        postbox = u'\U0001F4EE'
-        paperclip = u'\U0001F4CE'
-        biceps = u'\U0001F4AA'
-        grinning_face_smiling_eyes = u'\U0001F601'
-        winking_face = u'\U0001F609'
-        robot = u'\U0001F916'
-        right_arrow = u'\U000027A1'
-        writing_hand = u'\U0000270D'
-        robot_arm = u'\U0001F9BE'
-        thinking_face = u'\U0001F914'
-        clap_hands = u'\U0001F44F'
-        sun_glasses = u'\U0001F60E'
-        face_tongue = u'\U0001F61C'
-        unamused_face = u'\U0001F612'
-        tongue_out = u'\U0001F61D'
-        expression_less = u'\U0001F611'
-        siren = u'\U0001F6A8'
-        weary_face = u'\U0001F629'
-        face_blowing_a_kiss = u'\U0001F618'
-        gust_of_wind = u'\U0001F4A8'
-        fire = u'\U0001F525'
-        water_faucet = u'\U0001F6B0'
-        money_bag = u'\U0001F4B0'
-
-        text_troll_reply = [
-            f"Això no té pinta de proposta... {unamused_face}", f"Ets un troll!!! {tongue_out}",
-            f"Ho tens clar! {expression_less}", f"Alerta...TROLL!!! {siren}{siren}{siren}"
-        ]
-
-        text_reply_proposal = [
-            f"Anoto la proposta! {biceps}",f"Proposta anotada {winking_face}", f"Els hi anoto la proposta {grinning_face_smiling_eyes}", 
-            f"L'apunto! {closed_mailbox}", f"Els la deixo al guió {postbox}", f"Apuntada! {paperclip}", f"Proposta que no s'escapa! {robot}{right_arrow}{writing_hand}",
-            f"Viatjant cap al guió... {rocket}", f"Clar que sí! {robot} {robot_arm}", f"Vols dir que no la vas dir fa un temps? {thinking_face}", 
-            f"Aquesta sí que és bona! {clap_hands}{clap_hands}{clap_hands}", f"Vamos allá, ¿No? {sun_glasses}", f"Fot-li! {face_tongue}"
-        ]
-
-        text_reply_palasaca = [
-            f"En @tomasmanz i tot l'equip de Mossegalapoma t'estem molt agraïts! {face_blowing_a_kiss}",f"Disfruta-ho i moltes gràcies! {grinning_face_smiling_eyes} ",
-            f"Gràcies! Cada dia estem més aprop del Tesla Model S... {face_tongue}", f"La targeta fot fum!!! {fire}{gust_of_wind}",
-            f"De mica en mica s'omple la pica! {water_faucet}{money_bag}"
-        ]
-
-        text_rich_reply_proposal = [
-            f"Tota la raó, és del milloret que he vist últimament a Netflix.",
-            f"A Netflix oi? La vaig veure ahir vespre! {winking_face}",
-            f"Ah, pensava que era d'HBO aquesta...{thinking_face}",
-            f"Netflix té merda per un tub, però també de bones i aquesta n'és una {face_tongue}",
-            f"Llàstima que em vaig passar a Disney+ fa temps {sun_glasses}",
-            f"Vaja! Ara que he cancel·lat la subscripció la dius... {expression_less}",
-            f"Enganxa eh!? {face_tongue}",
-            f"Va, que no tot és Netflix en aquesta vida! {grinning_face_smiling_eyes}",
-            f"Podeu deixar de recomanar pelis i sèries a Netflix?! No hi ha qui pugui compilar! {weary_face}",
-        ]
-
-        if user_name != "":
-            text_reply_proposal.append(f"Saps @{user_name}, jo també ho anava a proposar... {grinning_face_smiling_eyes}")
-            text_reply_proposal.append(f"A veure, @{user_name}. Aquesta és bona {winking_face}")
-
-            text_reply_palasaca.append(f"@{user_name}, seguim endavant gràcies a tu {face_blowing_a_kiss}")
-            text_reply_palasaca.append(f"@{user_name}, sense tu això no seria possible {face_blowing_a_kiss}")
-            text_reply_palasaca.append(f"@{user_name}, necessitem mosseguis com tu per tirar això endavant. Merci! {grinning_face_smiling_eyes}")
-            text_reply_palasaca.append(f"Quan tinguem el Tesla, @{user_name} seràs dels primers a provar-lo! {sun_glasses} Paraula de Bot {robot}")
-            text_reply_palasaca.append(f"@{user_name}, saps que en @tomasmanz t'estima molt, oi? Jo en canvi... és complicat. {robot}")
-
-        #Add rich response if there is 'serie' or 'sèrie' or 'Netflix' in the message
-        #message_keywords = ['netflix', 'sèrie', 'serie', 'peli']
-        is_rich_response = False
-        message_keywords = ['netflix', 'nètflix']
-        if any( keyword for keyword in message_keywords if keyword in user_text.lower() ):
-            is_rich_response = True
-            
-        text_reply_errata = [
-            "Una altra vegada!?","Deixa'm apostar: Ha estat en Ludo ¬¬",
-            "Sort en tenim de vosaltres!", "Una altra!? Anoto la fe d'errates!"
-        ]
-        
-        random_troll_text_index = random.randint(0, len(text_troll_reply) -1 )
-        random_rich_proposal_text_index = random.randint(0, len(text_rich_reply_proposal) -1 )
-        random_proposal_text_index = random.randint(0, len(text_reply_proposal) -1 )
-        random_errata_text_index = random.randint(0, len(text_reply_errata) -1 )
-        random_palasaca_text_index = random.randint(0, len(text_reply_palasaca) -1 )
-
-        text_troll = text_troll_reply[random_troll_text_index]
-
-        if is_rich_response:
-            text_proposal = text_rich_reply_proposal[random_rich_proposal_text_index]
+    if is_proposal or is_errata:
+        if update.edited_message:
+            # CASE EDIT: The message was edited, re-process with edit-specific handler
+            await handle_edited_proposal(update, context, is_proposal)
+        elif msg.reply_to_message:
+            # CASE A: It is a reply to another message
+            await handle_reply_proposal(update, context, is_proposal)
         else:
-            text_proposal = text_reply_proposal[random_proposal_text_index]
-        
-        text_errata = text_reply_errata[random_errata_text_index]
+            # CASE B: The hashtag is in the same message as the proposal
+            await handle_direct_proposal(update, context, is_proposal)
 
-        text_palasaca = text_reply_palasaca[random_palasaca_text_index]
+    # 3. Gifts / Palasaca logic
+    if any(h in user_text_low for h in PALASACA):
+        await handle_palasaca(msg)
 
-        if any(hashtag for hashtag in hashtags if hashtag in user_text.lower()):
+    # 4. Mandalorian easter egg
+    if any(h in user_text_low for h in THIS_IS_THE_WAY):
+        gif = get_giphy_url(["baby yoda", "mandalorian", "thisistheway"])
+        if gif: await msg.reply_animation(gif)
 
-            if len(user_text) < 20:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_troll)
-            else:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_proposal)
-                bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text, entities=message_entities)
+# --- HANDLER REGISTRATION ---
+# Handlers are registered inside get_application() on first call.
 
-        if any(hashtag for hashtag in federrates if hashtag in user_text.lower()):
-            bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_errata)
-            bot.send_message(chat_id=-291751171, text=user_name + "("+ user_first_name + " " + user_last_name + "): " + user_text, entities=message_entities)
+# --- WEBHOOK MANAGEMENT (Cloud Functions) ---
+async def process_update(data):
+    # async with app: handles initialize() and shutdown() - PTB recommended for serverless
+    async with get_application() as app:
+        update = Update.de_json(data, app.bot)
+        await app.process_update(update)
 
-        #afiliats
-        if any(hashtag for hashtag in palasaca if hashtag in user_text.lower()):
-            random_number = random.randint(0,10)
-            if random_number%2 == 0:
-                bot.send_message(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, text=text_palasaca)
-            else:
-                url = get_thanks_gif_url()
-                bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
-
-        #mandalorian
-        if any(hashtag for hashtag in this_is_the_way if hashtag in user_text.lower()):
-            url = get_mandalorian_gif_url()
-            bot.send_animation(chat_id=update.effective_chat.id, reply_to_message_id=update.effective_message.message_id, animation=url)
-
-#based in https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks
+@functions_framework.http
 def webhook(request):
-    bot = telegram.Bot(token=os.environ["TELEGRAM_TOKEN"])
+    """Entry point for Google Cloud Function"""
     if request.method == 'POST':
-        update = telegram.Update.de_json(request.get_json(force=True), bot)
-
-        filter_hashtag_messages(update, bot)
+        try:
+            import asyncio
+            data = request.get_json(force=True)
+            asyncio.run(process_update(data))
+        except Exception as e:
+            logger.exception("Error processing update: %s", e)
+            return 'error', 500
     return 'ok'
 
-updater = Updater(token=os.environ["TELEGRAM_TOKEN"], use_context=True)
-job_queue = updater.job_queue
-
-thuesday_at_14 = datetime.time(hour=14, minute=0, second=0) #hour is in UTC
-job_thuesday = job_queue.run_daily(message_for_thuesday, time=thuesday_at_14, days= (2,)) #Wednesday
-job_queue.start()
-
-if not G_CLOUD:
-    dispatcher = updater.dispatcher
-
-    #dispatcher.add_handler(CommandHandler('start', start))
-    #dispatcher.add_handler(CommandHandler('help', help))
-    #dispatcher.add_handler(CommandHandler('hora', hora))
-
-    unknown_handler = MessageHandler(Filters.command, unknown)
-    dispatcher.add_handler(unknown_handler)
-
-    dispatcher.add_handler(MessageHandler(Filters.entity("hashtag"), filter_hashtag_messages))
-
-    updater.start_polling()
+# --- LOCAL EXECUTION ---
+if __name__ == '__main__':
+    import asyncio
+    if not G_CLOUD:
+        print("Bot running (Local mode - Polling)...")
+        get_application().run_polling()
+    else:
+        print("G_CLOUD is set to True. Set it to False to run locally.")
