@@ -1,2 +1,8 @@
-python-telegram-bot
-requests
+# Function dependencies, for example:
+# package>=version
+python-telegram-bot==21.1.1
+functions-framework==3.8.1
+requests==2.31.0
+# Para los tests en local (no se instalan en la nube si no quieres)
+pytest==8.2.0
+pytest-asyncio==0.23.6

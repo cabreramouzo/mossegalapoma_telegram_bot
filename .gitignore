@@ -1,3 +1,37 @@
 token.txt
 tenor_api_key.txt
 .DS_Store
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+env/
+
+# Python - Archivos compilados y caché
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing y Cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+nosetests.xml
+coverage.xml
+.mypy_cache/
+
+# Variables de entorno y secretos (¡MUY IMPORTANTE!)
+.env
+.flaskenv
+*.key
+*.pem
+
+# IDEs y Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Google Cloud (si usas el SDK localmente)
+.gcloud/
