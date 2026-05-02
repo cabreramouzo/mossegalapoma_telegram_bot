@@ -112,6 +112,73 @@ async def add_afiliats_tag(message):
                 link_replies.append((link_reply, new_entity))
     return link_replies
 
+
+async def handle_reply_proposal(update, context, is_proposal):
+    msg = update.effective_message
+    target_msg = msg.reply_to_message
+    content_text = (target_msg.text or target_msg.caption or "")
+    
+    # Confirmación en el grupo
+    await msg.reply_text(random.choice(TEXT_REPLY_PROPOSAL) if is_proposal else "Anoto la fe d'errates! 📝")
+
+    # PASO 1: Copia exacta del original (Foto, video o texto)
+    sent_msg = await context.bot.copy_message(
+        chat_id=GROUP_PROPOSALS,
+        from_chat_id=target_msg.chat_id,
+        message_id=target_msg.message_id
+    )
+
+    # PASO 2: Info del fichaje + Comentario del moderador
+    orig_user = target_msg.from_user
+    orig_display = f"{orig_user.username} ({orig_user.first_name})"
+    
+    info_text = (
+        f"💡 **Proposta de:** {orig_display}\n"
+        f"👤 **Fichada por:** @{msg.from_user.username}\n"
+        f"💬 **Comentario:** {msg.text or msg.caption}"
+    )
+
+    await context.bot.send_message(
+        chat_id=GROUP_PROPOSALS,
+        text=info_text,
+        reply_to_message_id=sent_msg.message_id,
+        parse_mode="Markdown"
+    )
+
+
+async def handle_direct_proposal(update, context, is_proposal):
+    msg = update.effective_message
+    user_text = (msg.text or msg.caption or "")
+    
+    if is_proposal and len(user_text) < 10:
+        await msg.reply_text(f"Això no té pinta de proposta... 😒")
+        return
+
+    # Confirmación
+    await msg.reply_text(random.choice(TEXT_REPLY_PROPOSAL) if is_proposal else "Anoto la fe d'errates! 📝")
+
+    # Header para identificar al autor
+    user = msg.from_user
+    user_display = f"{user.username} ({user.first_name})"
+    header = f"💡 **Proposta de {user_display}:**\n\n"
+
+    # Enviamos al grupo (copy_message funciona para fotos y texto)
+    # Si es solo texto, Telegram ignora el 'caption', así que usamos una lógica simple:
+    if msg.text:
+        await context.bot.send_message(
+            chat_id=GROUP_PROPOSALS,
+            text=header + user_text,
+            parse_mode="Markdown"
+        )
+    else:
+        await context.bot.copy_message(
+            chat_id=GROUP_PROPOSALS,
+            from_chat_id=msg.chat_id,
+            message_id=msg.message_id,
+            caption=header + user_text,
+            parse_mode="Markdown"
+        )
+
 async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handler único que gestiona la lógica de hashtags y links."""
     msg = update.effective_message
@@ -140,17 +207,13 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_errata = any(h in user_text_low for h in FEDERRATES)
 
     if is_proposal or is_errata:
-        if is_proposal and len(user_text) < 20:
-            await msg.reply_text(f"Això no té pinta de proposta... 😒")
+
+        if msg.reply_to_message:
+            # CASO A: Es una respuesta a otro mensaje
+            await handle_reply_proposal(update, context, is_proposal)
         else:
-            reply = random.choice(TEXT_REPLY_PROPOSAL) if is_proposal else "Anoto la fe d'errates! 📝"
-            await msg.reply_text(reply)
-            # Reenvío al grupo destino con el formato original
-            await context.bot.send_message(
-                chat_id=GROUP_PROPOSALS,
-                text=forward_header + user_text,
-                entities=msg.entities or msg.caption_entities
-            )
+            # CASO B: El hashtag va en el mismo mensaje que la propuesta
+            await handle_direct_proposal(update, context, is_proposal)
 
     # 3. Lógica de Regalos / Palasaca
     if any(h in user_text_low for h in PALASACA):
