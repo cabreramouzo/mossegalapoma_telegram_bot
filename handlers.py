@@ -31,32 +31,46 @@ async def handle_reply_proposal(update, context, is_proposal):
     msg = update.effective_message
     target_msg = msg.reply_to_message
     content_text = (target_msg.text or target_msg.caption or "")
-    print(f"Group id {msg.chat_id} - User {target_msg.from_user.id} - Content: {content_text[:30]}...")
+
     # Confirmation in the group
     await msg.reply_text(random.choice(TEXT_REPLY_PROPOSAL) if is_proposal else random.choice(TEXT_REPLY_ERRATA))
 
-    # STEP 1: Forward the original message (shows "Forwarded from..." header with author and chat)
-    sent_msg = await context.bot.forward_message(
-        chat_id=GROUP_PROPOSALS,
-        from_chat_id=target_msg.chat_id,
-        message_id=target_msg.message_id
-    )
+    # STEP 1: Forward the original message (shows "Forwarded from..." header with author and chat).
+    # Fall back to copy_message if the group has Protect Content enabled.
+    sent_msg = None
+    try:
+        sent_msg = await context.bot.forward_message(
+            chat_id=GROUP_PROPOSALS,
+            from_chat_id=target_msg.chat_id,
+            message_id=target_msg.message_id,
+        )
+    except Exception:
+        if target_msg.text:
+            sent_msg = await context.bot.send_message(
+                chat_id=GROUP_PROPOSALS,
+                text=content_text,
+                entities=shift_entities(target_msg.entities, ""),
+            )
+        else:
+            media_note = "[📎 El missatge original contenia un arxiu adjunt]\n"
+            sent_msg = await context.bot.send_message(
+                chat_id=GROUP_PROPOSALS,
+                text=media_note + content_text,
+            )
 
-    # STEP 2: Submission info + moderator comment
+    # STEP 2: Submission info reply
     orig_user = target_msg.from_user
     orig_display = f"{orig_user.username} ({orig_user.first_name})"
-    
     info_text = (
         f"💡 **Proposta de:** {orig_display}\n"
         f"👤 **Caçada per:** @{msg.from_user.username}\n"
-        f"💬 **Comentari original:** {msg.text or msg.caption}"
+        f"💬 **Comentari caçador:** {msg.text or msg.caption}"
     )
-
     await context.bot.send_message(
         chat_id=GROUP_PROPOSALS,
         text=info_text,
         reply_to_message_id=sent_msg.message_id,
-        parse_mode="Markdown"
+        parse_mode="Markdown",
     )
 
 

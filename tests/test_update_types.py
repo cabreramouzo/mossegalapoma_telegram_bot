@@ -84,3 +84,36 @@ async def test_edited_proposal_sends_edit_confirmation(mock_msg_factory):
     sent_text = mock_context.bot.send_message.call_args.kwargs['text']
     assert "editada" in sent_text
 
+
+@pytest.mark.asyncio
+async def test_topic_message_treated_as_direct_proposal():
+    """
+    In groups with Topics enabled, every message has reply_to_message pointing
+    at the topic header (message_thread_id). These must be treated as direct
+    proposals, NOT reply proposals.
+    """
+    mock_update = MagicMock()
+    mock_context = MagicMock()
+
+    mock_msg = AsyncMock()
+    mock_msg.text = "Proposta directa en un topic #proposta suficientment llarga"
+    mock_msg.caption = None
+    mock_msg.from_user.username = "user_topic"
+    mock_msg.from_user.first_name = "Topic"
+    mock_msg.from_user.last_name = "User"
+    mock_msg.message_thread_id = 42
+    # reply_to_message points to the topic header — same id as message_thread_id
+    mock_msg.reply_to_message = MagicMock()
+    mock_msg.reply_to_message.message_id = 42
+
+    mock_update.effective_message = mock_msg
+    mock_update.edited_message = None
+
+    with patch('main.handle_direct_proposal', new_callable=AsyncMock) as mock_direct, \
+         patch('main.handle_reply_proposal', new_callable=AsyncMock) as mock_reply:
+
+        await main_handler(mock_update, mock_context)
+
+        assert mock_direct.called, "Topic messages must be routed to handle_direct_proposal"
+        assert not mock_reply.called, "handle_reply_proposal must NOT be called for topic header replies"
+

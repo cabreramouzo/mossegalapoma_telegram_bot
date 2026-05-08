@@ -1,5 +1,13 @@
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock, AsyncMock, patch
+
+
+@pytest.fixture(autouse=True)
+def mock_firestore_db():
+    """Patch the Firestore client so tests never hit a real database."""
+    with patch('message_store.db') as mock_db:
+        yield mock_db
+
 
 @pytest.fixture
 def mock_msg_factory():

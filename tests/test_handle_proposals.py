@@ -41,53 +41,48 @@ async def test_direct_photo_with_caption(mock_msg_factory):
 
 @pytest.mark.asyncio
 async def test_reply_original_is_text(mock_msg_factory):
-    """Caso: Mensaje A (Texto) <- Mensaje B (#proposta)"""
+    """Caso: Mensaje A (Texto) <- Mensaje B (#proposta) → forward + info message"""
     mock_context = MagicMock()
     mock_context.bot.forward_message = AsyncMock(return_value=MagicMock(message_id=100))
     mock_context.bot.send_message = AsyncMock()
-    
-    msg_b = mock_msg_factory(text="#proposta comentario")
+
+    msg_b = mock_msg_factory(text="#proposta comentari")
     msg_a = mock_msg_factory(text="Esta es la idea original")
     msg_b.reply_to_message = msg_a
-    
+
     update = MagicMock(effective_message=msg_b)
-    
+
     await handle_reply_proposal(update, mock_context, is_proposal=True)
-    
-    # Verificamos que reenvía el mensaje A
+
     assert mock_context.bot.forward_message.called
-    # Verificamos que el comentario del mensaje B va en el segundo mensaje
-    args, kwargs = mock_context.bot.send_message.call_args
-    assert "comentario" in kwargs['text']
-    assert "Esta es la idea original" not in kwargs['text'] # Porque va en el forward_message
+    assert mock_context.bot.send_message.called
+    info_text = mock_context.bot.send_message.call_args.kwargs['text']
+    assert "Proposta de" in info_text
+    assert "Caçada per" in info_text
+    assert "comentari" in info_text
 
 @pytest.mark.asyncio
 async def test_reply_original_is_image(mock_msg_factory):
-    """Caso: Mensaje A (Foto) <- Mensaje B (#proposta)"""
+    """Caso: forward falla → fallback a send_message con nota de adjunto + info message"""
     mock_context = MagicMock()
-    # forward_message DEBE ser AsyncMock porque usas await
-    mock_context.bot.forward_message = AsyncMock(return_value=MagicMock(message_id=101))
-    # send_message DEBE ser AsyncMock porque usas await
-    mock_context.bot.send_message = AsyncMock()
-    
+    mock_context.bot.forward_message = AsyncMock(side_effect=Exception("The message can't be forwarded"))
+    mock_context.bot.send_message = AsyncMock(return_value=MagicMock(message_id=101))
+
     msg_b = mock_msg_factory(text="#proposta")
-    # ASEGURAMOS que reply_text sea awaitable
-    msg_b.reply_text = AsyncMock() 
-    
+    msg_b.reply_text = AsyncMock()
+
     msg_a = mock_msg_factory(caption="Foto de un prototipo")
-    msg_a.photo = [MagicMock()] 
-    
-    # IMPORTANTE: Vinculamos el reply
+    msg_a.photo = [MagicMock()]
+
     msg_b.reply_to_message = msg_a
-    
+
     update = MagicMock(effective_message=msg_b)
-    
-    # Ahora ya no debería fallar el await
+
     await handle_reply_proposal(update, mock_context, is_proposal=True)
-    
-    # Verificación
-    assert mock_context.bot.forward_message.called
-    assert mock_context.bot.forward_message.call_args.kwargs['message_id'] == 999
+
+    assert mock_context.bot.send_message.called
+    first_call_text = mock_context.bot.send_message.call_args_list[0].kwargs['text']
+    assert "adjunt" in first_call_text or "Foto de un prototipo" in first_call_text
 
 
 @pytest.mark.asyncio

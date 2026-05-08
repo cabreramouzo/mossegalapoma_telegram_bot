@@ -36,14 +36,42 @@ Hashtags com `#thisistheway` o `#mandalorian` fan que el bot respongui amb un GI
 ## Arquitectura
 
 ```
-main.py          # Entry point, handler principal i webhook per a GCF
-handlers.py      # Lògica de propostes (directes, replies, editades, palasaca)
-amazon.py        # Detecció i processament de links d'Amazon
-utils.py         # Client de Giphy
-constants.py     # Configuració, tokens i llistes de respostes
+main.py           # Entry point, handler principal i webhook per a GCF
+handlers.py       # Lògica de propostes (directes, replies, editades, palasaca)
+amazon.py         # Detecció i processament de links d'Amazon
+message_store.py  # Persistència de hashes de missatges a Firestore
+utils.py          # Client de Giphy
+constants.py      # Configuració, tokens i llistes de respostes
 ```
 
 El bot utilitza [python-telegram-bot v21](https://python-telegram-bot.org/) i segueix el patró recomanat per a entorns serverless: `asyncio.run()` + `async with app:` per gestionar el cicle de vida de l'aplicació per request.
+
+---
+
+## Persistència de missatges — Firestore
+
+Com que el bot s'executa a Google Cloud Functions (entorn serverless), **no té memòria entre requests**: cada invocació és independent i no pot guardar estat en memòria. Això crea un problema concret relacionat amb com Telegram gestiona els links amb preview.
+
+### El problema: previews de Telegram
+
+Quan un missatge conté un link (YouTube, Twitter, qualsevol URL amb metadades OpenGraph...), Telegram genera la preview de forma asíncrona. Un cop la té calculada, **envia un event `edited_message` amb el text original intacte** — l'edició no l'ha fet l'usuari, sinó el propi Telegram per adjuntar la preview al missatge. Des del punt de vista de la API, però, és indistingible d'una edició real.
+
+Si un missatge amb un link contenia un hashtag de proposta, el bot el processaria dues vegades: un cop quan l'usuari l'envia i un altre quan Telegram afegeix la preview, generant un missatge duplicat al grup de propostes.
+
+### La solució: hash del text a Firestore
+
+El bot utilitza [Cloud Firestore](https://firebase.google.com/docs/firestore) com a base de dades NoSQL per emmagatzemar un **hash SHA-256** del text de cada missatge amb proposta que processa. Quan arriba un `edited_message`:
+
+1. Es calcula el hash del nou text.
+2. Es consulta Firestore per recuperar el hash anterior del mateix missatge (clau: `chat_id:message_id`).
+3. Si el hash **no ha canviat** → l'edició és una preview afegida per Telegram; s'ignora.
+4. Si el hash **ha canviat** → l'usuari ha editat el text (correcció ortogràfica, etc.); es reprocessa i es desa el nou hash.
+
+D'aquesta manera, les edicions reals de l'usuari continuen funcionant amb normalitat: el bot les reenvia al grup de propostes marcades amb ✏️.
+
+Els documents a Firestore s'eliminen automàticament als **72 hores** gràcies al camp `expires_at` (compatible amb la [política TTL de Firestore](https://firebase.google.com/docs/firestore/ttl)).
+
+Aquesta capa és completament transparent per a l'usuari: els membres del grup no perceben cap diferència en el comportament.
 
 ---
 
@@ -56,6 +84,8 @@ El bot està allotjat a **Google Cloud Functions** (2ª generació, sobre Cloud 
 |---|---|
 | `TELEGRAM_TOKEN` | Token del bot obtingut a [@BotFather](https://t.me/BotFather) |
 | `GIPHY_API_KEY` | API key de [Giphy](https://developers.giphy.com/) |
+
+> **Firestore** no requereix cap variable d'entorn addicional quan s'executa a Google Cloud Functions: el client s'autentica automàticament amb el compte de servei associat a la funció (Application Default Credentials). Cal assegurar-se que el compte de servei té el rol `roles/datastore.user` al projecte.
 
 ### Entry point
 ```
@@ -107,5 +137,5 @@ python main.py
 pytest
 ```
 
-24 tests cobreixen tots els handlers, el flux d'Amazon, la detecció de tipus d'update (reaccions, edicions) i la preservació del format dels missatges.
+36 tests cobreixen tots els handlers, el flux d'Amazon, la detecció de tipus d'update (reaccions, edicions), la preservació del format dels missatges i la capa de persistència a Firestore (amb el client mockat per no tocar cap BD real).
 
