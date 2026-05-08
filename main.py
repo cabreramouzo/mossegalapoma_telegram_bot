@@ -55,6 +55,13 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_errata = any(h in user_text_low for h in FEDERRATES)
 
     if is_proposal or is_errata:
+        logger.info(
+            "Proposal detected. chat_id=%s message_id=%s edited=%s reply_to=%s is_topic_msg=%s",
+            msg.chat_id, msg.message_id,
+            bool(update.edited_message),
+            msg.reply_to_message.message_id if msg.reply_to_message else None,
+            getattr(msg, 'is_topic_message', None),
+        )
         if update.edited_message:
             # CASE EDIT: The message was edited, re-process with edit-specific handler
             if not text_has_changed(msg, user_text):
@@ -64,12 +71,17 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     msg.message_id,
                 )
                 return
+            logger.info("CASE EDIT → handle_edited_proposal")
             await handle_edited_proposal(update, context, is_proposal)
-        elif msg.reply_to_message:
-            # CASE A: It is a reply to another message
+        elif msg.reply_to_message and msg.reply_to_message.message_id != getattr(msg, 'message_thread_id', None):
+            # CASE A: It is a real reply to another message.
+            # Exclude topic-header replies: in groups with Topics enabled every message
+            # has reply_to_message pointing at the thread root (message_thread_id).
+            logger.info("CASE REPLY → handle_reply_proposal. reply_to_message_id=%s", msg.reply_to_message.message_id)
             await handle_reply_proposal(update, context, is_proposal)
         else:
-            # CASE B: The hashtag is in the same message as the proposal
+            # CASE B: Direct proposal (or a message in a topic thread, not a real reply)
+            logger.info("CASE DIRECT → handle_direct_proposal")
             await handle_direct_proposal(update, context, is_proposal)
         save_message_hash(msg, user_text)
 
