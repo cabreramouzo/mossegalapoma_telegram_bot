@@ -47,6 +47,7 @@ def test_save_message_hash_writes_correct_hash(mock_firestore_db):
     assert saved_doc["hash"] == get_text_hash(text)
     assert saved_doc["chat_id"] == msg.chat_id
     assert saved_doc["message_id"] == msg.message_id
+    assert saved_doc["preview"] == text[:25]
     assert "updated_at" in saved_doc
     assert "expires_at" in saved_doc
 

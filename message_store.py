@@ -26,6 +26,7 @@ def save_message_hash(msg, text: str):
         "hash": get_text_hash(text),
         "chat_id": msg.chat_id,
         "message_id": msg.message_id,
+        "preview": text[:25],
         "updated_at": now,
         "expires_at": now + timedelta(hours=MESSAGE_HASH_TTL_HOURS),
     })
