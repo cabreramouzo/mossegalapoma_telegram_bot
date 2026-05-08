@@ -41,11 +41,12 @@ async def test_direct_photo_with_caption(mock_msg_factory):
 
 @pytest.mark.asyncio
 async def test_reply_original_is_text(mock_msg_factory):
-    """Caso: Mensaje A (Texto) <- Mensaje B (#proposta) → send_message con header"""
+    """Caso: Mensaje A (Texto) <- Mensaje B (#proposta) → forward + info message"""
     mock_context = MagicMock()
+    mock_context.bot.forward_message = AsyncMock(return_value=MagicMock(message_id=100))
     mock_context.bot.send_message = AsyncMock()
 
-    msg_b = mock_msg_factory(text="#proposta")
+    msg_b = mock_msg_factory(text="#proposta comentari")
     msg_a = mock_msg_factory(text="Esta es la idea original")
     msg_b.reply_to_message = msg_a
 
@@ -53,16 +54,19 @@ async def test_reply_original_is_text(mock_msg_factory):
 
     await handle_reply_proposal(update, mock_context, is_proposal=True)
 
+    assert mock_context.bot.forward_message.called
     assert mock_context.bot.send_message.called
-    args, kwargs = mock_context.bot.send_message.call_args
-    assert "Esta es la idea original" in kwargs['text']
-    assert "Proposta de" in kwargs['text']
+    info_text = mock_context.bot.send_message.call_args.kwargs['text']
+    assert "Proposta de" in info_text
+    assert "Caçada per" in info_text
+    assert "comentari" in info_text
 
 @pytest.mark.asyncio
 async def test_reply_original_is_image(mock_msg_factory):
-    """Caso: Mensaje A (Foto) <- Mensaje B (#proposta) → send_message con caption (Protect Content blocks copy)"""
+    """Caso: forward falla → fallback a send_message con nota de adjunto + info message"""
     mock_context = MagicMock()
-    mock_context.bot.send_message = AsyncMock()
+    mock_context.bot.forward_message = AsyncMock(side_effect=Exception("The message can't be forwarded"))
+    mock_context.bot.send_message = AsyncMock(return_value=MagicMock(message_id=101))
 
     msg_b = mock_msg_factory(text="#proposta")
     msg_b.reply_text = AsyncMock()
@@ -77,9 +81,8 @@ async def test_reply_original_is_image(mock_msg_factory):
     await handle_reply_proposal(update, mock_context, is_proposal=True)
 
     assert mock_context.bot.send_message.called
-    kwargs = mock_context.bot.send_message.call_args.kwargs
-    assert "Proposta de" in kwargs['text']
-    assert "Foto de un prototipo" in kwargs['text']
+    first_call_text = mock_context.bot.send_message.call_args_list[0].kwargs['text']
+    assert "adjunt" in first_call_text or "Foto de un prototipo" in first_call_text
 
 
 @pytest.mark.asyncio

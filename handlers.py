@@ -35,25 +35,43 @@ async def handle_reply_proposal(update, context, is_proposal):
     # Confirmation in the group
     await msg.reply_text(random.choice(TEXT_REPLY_PROPOSAL) if is_proposal else random.choice(TEXT_REPLY_ERRATA))
 
-    # Build header identifying original author and who submitted it
+    # STEP 1: Forward the original message (shows "Forwarded from..." header with author and chat).
+    # Fall back to copy_message if the group has Protect Content enabled.
+    sent_msg = None
+    try:
+        sent_msg = await context.bot.forward_message(
+            chat_id=GROUP_PROPOSALS,
+            from_chat_id=target_msg.chat_id,
+            message_id=target_msg.message_id,
+        )
+    except Exception:
+        if target_msg.text:
+            sent_msg = await context.bot.send_message(
+                chat_id=GROUP_PROPOSALS,
+                text=content_text,
+                entities=shift_entities(target_msg.entities, ""),
+            )
+        else:
+            media_note = "[📎 El missatge original contenia un arxiu adjunt]\n"
+            sent_msg = await context.bot.send_message(
+                chat_id=GROUP_PROPOSALS,
+                text=media_note + content_text,
+            )
+
+    # STEP 2: Submission info reply
     orig_user = target_msg.from_user
     orig_display = f"{orig_user.username} ({orig_user.first_name})"
-    header = f"💡 Proposta de {orig_display} (caçada per @{msg.from_user.username}): "
-
-    if target_msg.text:
-        await context.bot.send_message(
-            chat_id=GROUP_PROPOSALS,
-            text=header + content_text,
-            entities=shift_entities(target_msg.entities, header),
-        )
-    else:
-        # The source group has "Protect Content" enabled, so copy_message is blocked.
-        # Send the caption as text; note that the original contained media.
-        media_note = "[📎 El missatge original contenia un arxiu adjunt]\n"
-        await context.bot.send_message(
-            chat_id=GROUP_PROPOSALS,
-            text=header + media_note + content_text,
-        )
+    info_text = (
+        f"💡 **Proposta de:** {orig_display}\n"
+        f"👤 **Caçada per:** @{msg.from_user.username}\n"
+        f"💬 **Comentari caçador:** {msg.text or msg.caption}"
+    )
+    await context.bot.send_message(
+        chat_id=GROUP_PROPOSALS,
+        text=info_text,
+        reply_to_message_id=sent_msg.message_id,
+        parse_mode="Markdown",
+    )
 
 
 async def handle_direct_proposal(update, context, is_proposal):
