@@ -1,5 +1,4 @@
 import logging
-import random
 import functions_framework
 from telegram import Update, MessageEntity, constants
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
@@ -7,10 +6,12 @@ from constants import *
 from amazon import handle_amazon_links
 from handlers import handle_direct_proposal, handle_edited_proposal, handle_reply_proposal, handle_palasaca, handle_netflix_mention
 from utils import get_giphy_url
+from message_store import save_message_hash, text_has_changed
 
 # --- INITIALIZATION ---
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 # Global application instance - lazily initialized on first request
 _application = None
@@ -56,6 +57,13 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if is_proposal or is_errata:
         if update.edited_message:
             # CASE EDIT: The message was edited, re-process with edit-specific handler
+            if not text_has_changed(msg, user_text):
+                logger.info(
+                    "Ignoring edited_message without text change. chat_id=%s message_id=%s",
+                    msg.chat_id,
+                    msg.message_id,
+                )
+                return
             await handle_edited_proposal(update, context, is_proposal)
         elif msg.reply_to_message:
             # CASE A: It is a reply to another message
@@ -63,6 +71,7 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             # CASE B: The hashtag is in the same message as the proposal
             await handle_direct_proposal(update, context, is_proposal)
+        save_message_hash(msg, user_text)
 
     # 3. Gifts / Palasaca logic
     if any(h in user_text_low for h in PALASACA):

@@ -29,7 +29,7 @@ async def test_main_handler_forward_format():
 
 @pytest.mark.asyncio
 async def test_photo_caption_with_hashtag():
-    with patch('main.random.random', return_value=0.1), \
+    with patch('handlers.random.random', return_value=0.1), \
          patch('amazon.add_afiliats_tag', new_callable=AsyncMock, return_value=[]):
         
         import main
