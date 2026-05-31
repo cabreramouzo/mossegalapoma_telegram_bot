@@ -52,11 +52,14 @@ El bot utilitza [python-telegram-bot v21](https://python-telegram-bot.org/) i se
 
 Com que el bot s'executa a Google Cloud Functions (entorn serverless), **no té memòria entre requests**: cada invocació és independent i no pot guardar estat en memòria. Això crea un problema concret relacionat amb com Telegram gestiona els links amb preview.
 
-### El problema: previews de Telegram
+### El problema: `edited_message` fantasma
 
-Quan un missatge conté un link (YouTube, Twitter, qualsevol URL amb metadades OpenGraph...), Telegram genera la preview de forma asíncrona. Un cop la té calculada, **envia un event `edited_message` amb el text original intacte** — l'edició no l'ha fet l'usuari, sinó el propi Telegram per adjuntar la preview al missatge. Des del punt de vista de la API, però, és indistingible d'una edició real.
+Hi ha dos casos coneguts en què Telegram envia un event `edited_message` sense que l'usuari hagi editat res:
 
-Si un missatge amb un link contenia un hashtag de proposta, el bot el processaria dues vegades: un cop quan l'usuari l'envia i un altre quan Telegram afegeix la preview, generant un missatge duplicat al grup de propostes.
+- **Preview de links** — quan un missatge conté un link (YouTube, Twitter, qualsevol URL amb metadades OpenGraph...), Telegram genera la preview de forma asíncrona. Un cop la té calculada, envia un `edited_message` amb el text original intacte per adjuntar-hi la preview.
+- **Re-entrega d'updates antics** — en cas d'incidències als servidors de Telegram, re-registre del webhook o redesplegament del bot, Telegram pot reenviar `edited_message` d'hores o fins i tot dies enrere, fins i tot per missatges sense cap link.
+
+En tots dos casos, des del punt de vista de l'API és indistingible d'una edició real. Si el missatge contenia un hashtag de proposta, el bot el reprocessaria i generaria un missatge duplicat al grup de propostes.
 
 ### La solució: hash del text a Firestore
 
@@ -69,7 +72,7 @@ El bot utilitza [Cloud Firestore](https://firebase.google.com/docs/firestore) co
 
 D'aquesta manera, les edicions reals de l'usuari continuen funcionant amb normalitat: el bot les reenvia al grup de propostes marcades amb ✏️.
 
-Els documents a Firestore s'eliminen automàticament als **72 hores** gràcies al camp `expires_at` (compatible amb la [política TTL de Firestore](https://firebase.google.com/docs/firestore/ttl)).
+Els documents a Firestore s'eliminen automàticament als **6 mesos** gràcies al camp `expires_at` (compatible amb la [política TTL de Firestore](https://firebase.google.com/docs/firestore/ttl)). El TTL s'ha fixat a 6 mesos (en comptes dels 72 hores originals) per cobrir el cas de re-entregues tardanes de Telegram: si el document ja no existeix a Firestore quan arriba un `edited_message` antic, el bot no pot saber que el text no ha canviat i el reprocessaria incorrectament.
 
 Aquesta capa és completament transparent per a l'usuari: els membres del grup no perceben cap diferència en el comportament.
 

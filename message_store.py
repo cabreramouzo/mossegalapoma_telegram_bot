@@ -4,7 +4,7 @@ from google.cloud import firestore
 
 db = firestore.Client()
 MESSAGE_HASH_COLLECTION = "telegram_message_hashes"
-MESSAGE_HASH_TTL_HOURS = 72
+MESSAGE_HASH_TTL_HOURS = 24 * 180 # 6 months
 
 
 def get_message_key(msg):
