@@ -78,10 +78,6 @@ async def handle_direct_proposal(update, context, is_proposal):
     msg = update.effective_message
     user_text = (msg.text or msg.caption or "")
     
-    if is_proposal and len(user_text) < 20:
-        await msg.reply_text(f"Això no té pinta de proposta... 😒")
-        return
-
     # Confirmation
     await msg.reply_text(random.choice(TEXT_REPLY_PROPOSAL) if is_proposal else "Anoto la fe d'errates! 📝")
 
